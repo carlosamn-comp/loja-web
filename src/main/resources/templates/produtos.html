@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Produtos - Loja Web</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; margin: 2rem; color: #222; }
+        h1 { color: #2c3e50; }
+        form { margin-bottom: 1rem; }
+        input[type=text] { padding: .4rem; width: 250px; }
+        button { padding: .4rem .8rem; cursor: pointer; }
+        table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+        th, td { border: 1px solid #ddd; padding: .6rem; text-align: left; }
+        th { background: #2c3e50; color: #fff; }
+        tr:nth-child(even) { background: #f6f6f6; }
+        .vazio { color: #888; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>Catalogo de Produtos</h1>
+
+    <form method="get" th:action="@{/produtos}">
+        <input type="text" name="busca" placeholder="Buscar por nome..." th:value="${busca}"/>
+        <button type="submit">Buscar</button>
+        <a th:href="@{/produtos}">Limpar</a>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nome</th>
+                <th>Descricao</th>
+                <th>Categoria</th>
+                <th>Preco (R$)</th>
+                <th>Estoque</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="p : ${produtos}">
+                <td th:text="${p.id}">1</td>
+                <td th:text="${p.nome}">Produto</td>
+                <td th:text="${p.descricao}">Descricao</td>
+                <td th:text="${p.categoria != null ? p.categoria.nome : '-'}">Categoria</td>
+                <td th:text="${#numbers.formatDecimal(p.preco, 1, 2)}">0,00</td>
+                <td th:text="${p.estoque}">0</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(produtos)}">
+                <td colspan="6" class="vazio">Nenhum produto encontrado.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p style="margin-top:1.5rem;">
+        REST-API: <a th:href="@{/api/produtos}">/api/produtos</a> &nbsp;|&nbsp;
+        Console H2: <a th:href="@{/h2-console}">/h2-console</a>
+    </p>
+</body>
+</html>
