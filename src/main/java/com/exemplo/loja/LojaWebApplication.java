@@ -96,8 +96,11 @@ public class LojaWebApplication {
             System.out.println("   Atualizado: " + pedido);
 
             // ---------- DELETE ----------
-            System.out.println("\n>> DELETE: removendo o produto 'Fone Bluetooth'");
-            produtoRepo.deleteById(fone.getId());
+            // Observacao: 'notebook' e 'fone' estao vinculados a itens do pedido,
+            // entao remove-los violaria a integridade referencial (FK em item_pedido).
+            // Para demonstrar o DELETE, removemos um produto sem pedidos associados.
+            System.out.println("\n>> DELETE: removendo o produto 'Java Efetivo' (sem pedidos)");
+            produtoRepo.deleteById(livroJava.getId());
             System.out.println("   Produtos restantes: " + produtoRepo.count());
             produtoRepo.findAll().forEach(p -> System.out.println("   - " + p));
 
