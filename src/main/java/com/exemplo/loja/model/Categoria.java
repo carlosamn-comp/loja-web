@@ -28,6 +28,9 @@ public class Categoria {
     @Column(nullable = false, unique = true, length = 80)
     private String nome;
 
+    @Column(length = 255)
+    private String descricao;
+
     @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Produto> produtos = new ArrayList<>();
@@ -37,6 +40,11 @@ public class Categoria {
 
     public Categoria(String nome) {
         this.nome = nome;
+    }
+
+    public Categoria(String nome, String descricao) {
+        this.nome = nome;
+        this.descricao = descricao;
     }
 
     public Long getId() {
@@ -53,6 +61,14 @@ public class Categoria {
 
     public void setNome(String nome) {
         this.nome = nome;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
     }
 
     public List<Produto> getProdutos() {

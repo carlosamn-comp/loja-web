@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(#{admin.clientes.titulo})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<nav th:replace="~{fragments/layout :: adminbar}"></nav>
+
+<main class="container">
+    <h1 th:text="#{admin.clientes.titulo}">Gestao de clientes</h1>
+
+    <p><a class="btn" th:href="@{/admin/clientes/novo}" th:text="#{crud.novo}">Novo</a></p>
+
+    <table>
+        <thead>
+        <tr>
+            <th>#</th>
+            <th th:text="#{cliente.nome}">Nome</th>
+            <th th:text="#{cliente.email}">E-mail</th>
+            <th th:text="#{cliente.cpf}">CPF</th>
+            <th th:text="#{cliente.sexo}">Sexo</th>
+            <th th:text="#{crud.acoes}">Acoes</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="c : ${clientes}">
+            <td th:text="${c.id}">1</td>
+            <td th:text="${c.nome}">Nome</td>
+            <td th:text="${c.email}">email</td>
+            <td th:text="${c.cpf}">CPF</td>
+            <td th:text="#{'sexo.' + ${c.sexo}}">Sexo</td>
+            <td class="actions">
+                <a class="btn" th:href="@{/admin/clientes/{id}/editar(id=${c.id})}"
+                   th:text="#{crud.editar}">Editar</a>
+                <form th:action="@{/admin/clientes/{id}/excluir(id=${c.id})}" method="post"
+                      th:onsubmit="'return confirm(\'' + #{crud.confirmaExcluir} + '\');'">
+                    <button type="submit" class="danger" th:text="#{crud.excluir}">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(clientes)}">
+            <td colspan="6" class="vazio" th:text="#{produtos.vazio}">Vazio</td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(#{pedidos.titulo})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container">
+    <h1 th:text="#{pedidos.titulo}">Meus pedidos</h1>
+
+    <div th:if="${ok != null}" class="alert ok" th:text="#{${ok}}">Ok</div>
+
+    <p th:if="${#lists.isEmpty(pedidos)}" class="vazio" th:text="#{pedidos.vazio}">Sem pedidos.</p>
+
+    <table th:unless="${#lists.isEmpty(pedidos)}">
+        <thead>
+        <tr>
+            <th th:text="#{pedidos.col.id}">Pedido</th>
+            <th th:text="#{pedidos.col.data}">Data</th>
+            <th th:text="#{pedidos.col.itens}">Itens</th>
+            <th th:text="#{pedidos.col.status}">Status</th>
+            <th th:text="#{pedidos.col.total}">Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${pedidos}">
+            <td th:text="${p.id}">1</td>
+            <td th:text="${#temporals.format(p.data, 'dd/MM/yyyy HH:mm')}">data</td>
+            <td>
+                <span th:each="item, it : ${p.itens}">
+                    <span th:text="${item.quantidade} + 'x ' + ${item.produto.nome}">item</span>
+                    <span th:if="${!it.last}">, </span>
+                </span>
+            </td>
+            <td>
+                <span class="badge" th:classappend="${p.status}"
+                      th:text="#{'status.' + ${p.status}}">Status</span>
+            </td>
+            <td th:text="'R$ ' + ${#numbers.formatDecimal(p.total, 1, 2)}">R$ 0,00</td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

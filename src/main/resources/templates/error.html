@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(#{erro.titulo})}"></head>
+<body>
+<nav class="navbar">
+    <a class="brand" th:href="@{/produtos}" th:text="#{app.nome}">Loja Web</a>
+</nav>
+
+<main class="container narrow" style="text-align:center; margin-top:3rem;">
+    <h1 th:text="#{erro.titulo}">Ops! Algo deu errado</h1>
+
+    <p class="muted" th:if="${status != null}">
+        <span th:text="#{erro.codigo}">Codigo</span>: <strong th:text="${status}">500</strong>
+    </p>
+
+    <p th:text="${mensagem} ?: #{erro.mensagem}">Ocorreu um erro.</p>
+
+    <p style="margin-top:1.5rem;">
+        <a class="btn" th:href="@{/produtos}" th:text="#{erro.voltar}">Voltar para o inicio</a>
+    </p>
+</main>
+</body>
+</html>

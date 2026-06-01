@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(#{admin.produtos.titulo})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<nav th:replace="~{fragments/layout :: adminbar}"></nav>
+
+<main class="container narrow">
+    <h1 th:text="${edicao} ? #{crud.editar} : #{crud.novo}">Produto</h1>
+
+    <!-- Erros de validacao das imagens -->
+    <ul th:if="${errosImagem != null and !errosImagem.isEmpty()}" class="erro">
+        <li th:each="e : ${errosImagem}" th:text="${e}"></li>
+    </ul>
+
+    <form th:object="${produto}" method="post" enctype="multipart/form-data"
+          th:action="${edicao} ? @{/admin/produtos/{id}/editar(id=*{id})} : @{/admin/produtos/novo}">
+
+        <label>
+            <span th:text="#{produto.nome}">Nome</span>
+            <input type="text" th:field="*{nome}"/>
+            <small class="erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></small>
+        </label>
+
+        <label>
+            <span th:text="#{produto.descricao}">Descricao</span>
+            <textarea th:field="*{descricao}" rows="3"></textarea>
+            <small class="erro" th:if="${#fields.hasErrors('descricao')}" th:errors="*{descricao}"></small>
+        </label>
+
+        <label>
+            <span th:text="#{produto.preco}">Preco</span>
+            <input type="number" step="0.01" min="0" th:field="*{preco}"/>
+            <small class="erro" th:if="${#fields.hasErrors('preco')}" th:errors="*{preco}"></small>
+        </label>
+
+        <label>
+            <span th:text="#{produto.estoque}">Estoque</span>
+            <input type="number" min="0" th:field="*{estoque}"/>
+            <small class="erro" th:if="${#fields.hasErrors('estoque')}" th:errors="*{estoque}"></small>
+        </label>
+
+        <label>
+            <span th:text="#{produto.categoria}">Categoria</span>
+            <select name="categoriaId">
+                <option value="" th:text="#{form.selecione}">Selecione...</option>
+                <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nome}"
+                        th:selected="${produto.categoria != null and produto.categoria.id == cat.id}">Categoria</option>
+            </select>
+            <small class="erro" th:if="${#fields.hasErrors('categoria')}" th:errors="*{categoria}"></small>
+        </label>
+
+        <label>
+            <span th:text="#{produto.imagens}">Imagens</span>
+            <input type="file" name="arquivos" multiple accept="image/*"/>
+            <small class="muted" th:text="#{produto.imagens.ajuda}">Selecione ate 10 imagens.</small>
+        </label>
+
+        <div class="actions">
+            <button type="submit" th:text="#{crud.salvar}">Salvar</button>
+            <a class="btn secondary" th:href="@{/admin/produtos}" th:text="#{crud.cancelar}">Cancelar</a>
+        </div>
+    </form>
+
+    <!-- Imagens ja cadastradas (somente na edicao); cada exclusao e um form separado -->
+    <div th:if="${edicao and imagemIds != null and !imagemIds.isEmpty()}" style="margin-top:1.5rem">
+        <h3 th:text="#{produto.imagens.atuais}">Imagens atuais</h3>
+        <div style="display:flex; gap:1rem; flex-wrap:wrap">
+            <div th:each="imgId : ${imagemIds}" style="text-align:center">
+                <img th:src="@{/produtos/imagens/{id}(id=${imgId})}" alt="imagem"
+                     style="height:90px; border:1px solid #ddd; border-radius:4px"/>
+                <form th:action="@{/admin/produtos/{pid}/imagens/{iid}/excluir(pid=${produto.id}, iid=${imgId})}"
+                      method="post">
+                    <button type="submit" class="danger" th:text="#{crud.excluir}">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

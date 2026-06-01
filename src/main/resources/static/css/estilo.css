@@ -1,0 +1,88 @@
+* { box-sizing: border-box; }
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    color: #222;
+    background: #f7f7f9;
+}
+
+/* ---------- Navbar ---------- */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #2c3e50;
+    color: #fff;
+    padding: .8rem 1.5rem;
+    flex-wrap: wrap;
+}
+.navbar .brand {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #fff;
+    text-decoration: none;
+}
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.nav-links a { color: #ecf0f1; text-decoration: none; }
+.nav-links a:hover { text-decoration: underline; }
+.nav-links .user { color: #bdc3c7; font-size: .9rem; }
+.nav-links .lang { font-size: .8rem; border-left: 1px solid #5d6d7e; padding-left: 1rem; }
+.nav-links form.inline { display: inline; margin: 0; }
+.nav-links form.inline button {
+    background: #e74c3c; color: #fff; border: none;
+    padding: .35rem .7rem; border-radius: 4px; cursor: pointer;
+}
+
+/* ---------- Layout ---------- */
+.container { max-width: 1000px; margin: 1.5rem auto; padding: 0 1.5rem; }
+.container.narrow { max-width: 460px; }
+h1 { color: #2c3e50; }
+
+/* ---------- Formularios ---------- */
+form label { display: block; margin-bottom: .9rem; }
+form label span { display: block; font-weight: bold; margin-bottom: .25rem; font-size: .9rem; }
+input[type=text], input[type=email], input[type=password], input[type=number],
+input[type=date], select, textarea {
+    width: 100%; padding: .5rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;
+}
+button {
+    padding: .55rem 1.1rem; cursor: pointer; border: none; border-radius: 4px;
+    background: #2980b9; color: #fff; font-size: 1rem;
+}
+button:hover { background: #2471a3; }
+button.danger { background: #e74c3c; }
+button.secondary { background: #7f8c8d; }
+
+/* ---------- Tabelas ---------- */
+table { border-collapse: collapse; width: 100%; margin-top: 1rem; background: #fff; }
+th, td { border: 1px solid #ddd; padding: .6rem; text-align: left; }
+th { background: #2c3e50; color: #fff; }
+tr:nth-child(even) { background: #f6f6f6; }
+
+/* ---------- Auxiliares ---------- */
+.muted { color: #666; font-size: .9rem; }
+.erro { color: #c0392b; font-size: .85rem; }
+.vazio { color: #888; font-style: italic; }
+.alert { padding: .7rem 1rem; border-radius: 4px; margin: 1rem 0; }
+.alert.ok { background: #d4efdf; color: #1e8449; }
+.alert.erro { background: #fadbd8; color: #c0392b; }
+.actions { display: flex; gap: .5rem; }
+.toolbar { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1rem; }
+.toolbar label { margin-bottom: 0; }
+.badge { padding: .2rem .5rem; border-radius: 10px; font-size: .8rem; color: #fff; }
+.badge.ABERTO { background: #f39c12; }
+.badge.PAGO { background: #27ae60; }
+.badge.ENVIADO { background: #2980b9; }
+.badge.CANCELADO { background: #c0392b; }
+a.btn { text-decoration: none; display: inline-block; padding: .4rem .8rem; border-radius: 4px; background: #2980b9; color: #fff; }
+
+/* ---------- Sub-navegacao admin ---------- */
+.adminbar { display: flex; gap: 1.2rem; background: #34495e; padding: .6rem 1.5rem; flex-wrap: wrap; }
+.adminbar a { color: #ecf0f1; text-decoration: none; font-size: .95rem; }
+.adminbar a:hover { text-decoration: underline; }

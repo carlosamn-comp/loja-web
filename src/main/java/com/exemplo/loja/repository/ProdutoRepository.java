@@ -27,4 +27,18 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
 
     @Query("SELECT p FROM Produto p WHERE p.categoria.nome = :nomeCategoria")
     List<Produto> buscarPorNomeCategoria(@Param("nomeCategoria") String nomeCategoria);
+
+    /**
+     * Filtro combinado (R4): todos os parametros sao opcionais (nulos sao ignorados).
+     */
+    @Query("SELECT p FROM Produto p WHERE "
+            + "(:nome IS NULL OR LOWER(p.nome) LIKE LOWER(CONCAT('%', :nome, '%'))) AND "
+            + "(:categoriaId IS NULL OR p.categoria.id = :categoriaId) AND "
+            + "(:precoMin IS NULL OR p.preco >= :precoMin) AND "
+            + "(:precoMax IS NULL OR p.preco <= :precoMax) "
+            + "ORDER BY p.nome")
+    List<Produto> filtrar(@Param("nome") String nome,
+                          @Param("categoriaId") Long categoriaId,
+                          @Param("precoMin") BigDecimal precoMin,
+                          @Param("precoMax") BigDecimal precoMax);
 }

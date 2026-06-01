@@ -1,0 +1,147 @@
+### Exemplos de uso da REST-API da Loja Web (T5)
+### Extensao usada: REST Client (Huachao Mao)
+### Como usar: suba a aplicacao com  .\mvnw spring-boot:run
+### e clique no "Send Request" que aparece acima de cada requisicao.
+
+@host = http://localhost:8080
+
+### 1) Listar todos os produtos 
+GET {{host}}/api/produtos
+
+### 2) Listar categorias 
+GET {{host}}/api/categorias
+
+### 3) Buscar um produto especifico por id
+GET {{host}}/api/produtos/1
+
+### 4) Filtrar produtos por nome
+GET {{host}}/api/produtos?nome=fone
+
+### 5) Criar uma nova categoria
+POST {{host}}/api/categorias
+Content-Type: application/json
+
+{
+  "nome": "Perifericos"
+}
+
+### 6) Criar um produto
+POST {{host}}/api/produtos
+Content-Type: application/json
+
+{
+  "nome": "Mouse Gamer",
+  "descricao": "RGB",
+  "preco": 150.0,
+  "estoque": 20,
+  "categoria": { "id": 3 }
+}
+
+POST {{host}}/api/produtos
+Content-Type: application/json
+
+{
+  "nome": "Harry Potter",
+  "descricao": "Fantasia e Magia",
+  "preco": 60.0,
+  "estoque": 20,
+  "categoria": { "id": 2 }
+}
+
+POST {{host}}/api/produtos
+Content-Type: application/json
+
+{
+  "nome": "RTX 5600 8GB",
+  "descricao": "Placa de video",
+  "preco": 2000.0,
+  "estoque": 20,
+  "categoria": { "id": 1 }
+}
+
+### 7) Atualizar um produto 
+PUT {{host}}/api/produtos/1
+Content-Type: application/json
+
+{
+  "nome": "Mouse Gamer Pro",
+  "descricao": "RGB",
+  "preco": 199.9,
+  "estoque": 15,
+  "categoria": { "id": 4 }
+}
+
+### 8) Remover um produto (troque o /1 pelo id real)
+DELETE {{host}}/api/produtos/1
+
+### 9) Produtos de uma categoria (troque o id)
+GET {{host}}/api/produtos/categorias/1
+
+### ==================== CATEGORIAS (CRUD completo) ====================
+### Atualizar categoria
+PUT {{host}}/api/categorias/1
+Content-Type: application/json
+
+{
+  "nome": "Perifericos e acessorios",
+  "descricao": "Mouses, teclados, headsets"
+}
+
+### Remover categoria (cuidado: categorias com produtos violam integridade)
+DELETE {{host}}/api/categorias/1
+
+### ==================== CLIENTES (CRUD) ====================
+### Listar clientes
+GET {{host}}/api/clientes
+
+### Buscar cliente por id
+GET {{host}}/api/clientes/1
+
+### Criar cliente (a senha e recebida mas nunca devolvida no JSON)
+POST {{host}}/api/clientes
+Content-Type: application/json
+
+{
+  "nome": "Joao Souza",
+  "email": "joao@email.com",
+  "senha": "segredo123",
+  "cpf": "390.533.447-05",
+  "telefone": "(11) 98888-1111",
+  "sexo": "MASCULINO",
+  "dataNascimento": "1990-03-15"
+}
+
+### Atualizar cliente (envie todos os campos, inclusive a senha)
+PUT {{host}}/api/clientes/1
+Content-Type: application/json
+
+{
+  "nome": "Joao Souza Jr.",
+  "email": "joao@email.com",
+  "senha": "novaSenha123",
+  "cpf": "390.533.447-05",
+  "telefone": "(11) 97777-2222",
+  "sexo": "MASCULINO",
+  "dataNascimento": "1990-03-15"
+}
+
+### Remover cliente
+DELETE {{host}}/api/clientes/1
+
+### ==================== PEDIDOS ====================
+### Criar pedido para o cliente de id = 1 (use ids de produtos existentes)
+POST {{host}}/api/pedidos/clientes/1
+Content-Type: application/json
+
+{
+  "itens": [
+    { "produtoId": 1, "quantidade": 2 },
+    { "produtoId": 2, "quantidade": 1 }
+  ]
+}
+
+### Listar pedidos do cliente de id = 1
+GET {{host}}/api/pedidos/clientes/1
+
+### Listar pedidos por status (ABERTO, PAGO, ENVIADO, CANCELADO)
+GET {{host}}/api/pedidos/status/ABERTO

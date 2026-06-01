@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(#{admin.clientes.titulo})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<nav th:replace="~{fragments/layout :: adminbar}"></nav>
+
+<main class="container narrow">
+    <h1 th:text="${edicao} ? #{crud.editar} : #{crud.novo}">Cliente</h1>
+
+    <form th:object="${cliente}" method="post"
+          th:action="${edicao} ? @{/admin/clientes/{id}/editar(id=*{id})} : @{/admin/clientes/novo}">
+
+        <label>
+            <span th:text="#{cliente.nome}">Nome</span>
+            <input type="text" th:field="*{nome}"/>
+            <small class="erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></small>
+        </label>
+
+        <label>
+            <span th:text="#{cliente.email}">E-mail</span>
+            <input type="email" th:field="*{email}"/>
+            <small class="erro" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+        </label>
+
+        <!-- Na edicao a senha real fica oculta (placeholder); usa-se "novaSenha" -->
+        <input type="hidden" th:if="${edicao}" th:field="*{senha}"/>
+        <label th:unless="${edicao}">
+            <span th:text="#{cliente.senha}">Senha</span>
+            <input type="password" th:field="*{senha}"/>
+            <small class="erro" th:if="${#fields.hasErrors('senha')}" th:errors="*{senha}"></small>
+        </label>
+        <label th:if="${edicao}">
+            <span th:text="#{cliente.senha}">Senha</span>
+            <input type="password" name="novaSenha"/>
+            <small class="muted" th:text="#{cliente.senhaEdicao}">Deixe em branco para manter.</small>
+        </label>
+
+        <label>
+            <span th:text="#{cliente.cpf}">CPF</span>
+            <input type="text" th:field="*{cpf}" placeholder="000.000.000-00"/>
+            <small class="erro" th:if="${#fields.hasErrors('cpf')}" th:errors="*{cpf}"></small>
+        </label>
+
+        <label>
+            <span th:text="#{cliente.telefone}">Telefone</span>
+            <input type="text" th:field="*{telefone}"/>
+        </label>
+
+        <label>
+            <span th:text="#{cliente.sexo}">Sexo</span>
+            <select th:field="*{sexo}">
+                <option value="" th:text="#{form.selecione}">Selecione...</option>
+                <option th:each="s : ${sexos}" th:value="${s}" th:text="#{'sexo.' + ${s}}">Sexo</option>
+            </select>
+            <small class="erro" th:if="${#fields.hasErrors('sexo')}" th:errors="*{sexo}"></small>
+        </label>
+
+        <label>
+            <span th:text="#{cliente.dataNascimento}">Data de nascimento</span>
+            <input type="date" th:field="*{dataNascimento}"/>
+            <small class="erro" th:if="${#fields.hasErrors('dataNascimento')}" th:errors="*{dataNascimento}"></small>
+        </label>
+
+        <div class="actions">
+            <button type="submit" th:text="#{crud.salvar}">Salvar</button>
+            <a class="btn secondary" th:href="@{/admin/clientes}" th:text="#{crud.cancelar}">Cancelar</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

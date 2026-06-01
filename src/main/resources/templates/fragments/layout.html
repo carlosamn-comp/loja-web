@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(titulo)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${titulo} + ' - ' + #{app.nome}">Loja Web</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}"/>
+</head>
+<body>
+
+<!-- ===================== BARRA DE NAVEGACAO ===================== -->
+<nav th:fragment="navbar" class="navbar">
+    <a class="brand" th:href="@{/produtos}" th:text="#{app.nome}">Loja Web</a>
+
+    <div class="nav-links">
+        <a th:href="@{/produtos}" th:text="#{nav.catalogo}">Catalogo</a>
+
+        <!-- Cliente autenticado -->
+        <th:block sec:authorize="hasRole('CLIENTE')">
+            <a th:href="@{/carrinho}" th:text="#{nav.carrinho}">Carrinho</a>
+            <a th:href="@{/pedidos}" th:text="#{nav.meusPedidos}">Meus pedidos</a>
+        </th:block>
+
+        <!-- Administrador autenticado -->
+        <th:block sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/admin/produtos}" th:text="#{nav.admin}">Administracao</a>
+        </th:block>
+
+        <!-- Nao autenticado -->
+        <th:block sec:authorize="isAnonymous()">
+            <a th:href="@{/login}" th:text="#{nav.login}">Entrar</a>
+            <a th:href="@{/registro}" th:text="#{nav.registro}">Cadastrar</a>
+        </th:block>
+
+        <!-- Autenticado: saudacao + logout -->
+        <th:block sec:authorize="isAuthenticated()">
+            <span class="user">
+                <span th:text="#{nav.ola}">Ola</span>,
+                <strong sec:authentication="name">usuario</strong>
+            </span>
+            <form th:action="@{/logout}" method="post" class="inline">
+                <button type="submit" th:text="#{nav.logout}">Sair</button>
+            </form>
+        </th:block>
+
+        <!-- Troca de idioma -->
+        <span class="lang">
+            <a th:href="@{${requestURI}(lang='pt')}">PT</a>
+            <a th:href="@{${requestURI}(lang='en')}">EN</a>
+        </span>
+    </div>
+</nav>
+
+<!-- ===================== SUB-NAVEGACAO ADMIN ===================== -->
+<nav th:fragment="adminbar" class="adminbar">
+    <a th:href="@{/admin/clientes}" th:text="#{admin.nav.clientes}">Clientes</a>
+    <a th:href="@{/admin/categorias}" th:text="#{admin.nav.categorias}">Categorias</a>
+    <a th:href="@{/admin/produtos}" th:text="#{admin.nav.produtos}">Produtos</a>
+    <a th:href="@{/admin/pedidos}" th:text="#{admin.nav.pedidos}">Pedidos</a>
+</nav>
+
+</body>
+</html>

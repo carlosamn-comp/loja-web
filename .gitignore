@@ -34,3 +34,8 @@ build/
 *.log
 .DS_Store
 Thumbs.db
+
+### Banco de dados H2 (arquivo local - nao versionar) ###
+data/
+*.mv.db
+*.trace.db

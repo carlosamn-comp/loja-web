@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(#{admin.categorias.titulo})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<nav th:replace="~{fragments/layout :: adminbar}"></nav>
+
+<main class="container narrow">
+    <h1 th:text="${edicao} ? #{crud.editar} : #{crud.novo}">Categoria</h1>
+
+    <form th:object="${categoria}" method="post"
+          th:action="${edicao} ? @{/admin/categorias/{id}/editar(id=*{id})} : @{/admin/categorias/novo}">
+
+        <label>
+            <span th:text="#{categoria.nome}">Nome</span>
+            <input type="text" th:field="*{nome}"/>
+            <small class="erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></small>
+        </label>
+
+        <label>
+            <span th:text="#{categoria.descricao}">Descricao</span>
+            <textarea th:field="*{descricao}" rows="3"></textarea>
+            <small class="erro" th:if="${#fields.hasErrors('descricao')}" th:errors="*{descricao}"></small>
+        </label>
+
+        <div class="actions">
+            <button type="submit" th:text="#{crud.salvar}">Salvar</button>
+            <a class="btn secondary" th:href="@{/admin/categorias}" th:text="#{crud.cancelar}">Cancelar</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

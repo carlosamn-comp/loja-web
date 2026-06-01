@@ -50,6 +50,11 @@ public class ProdutoRestController {
                         HttpStatus.NOT_FOUND, "Produto nao encontrado: " + id));
     }
 
+    @GetMapping("/categorias/{categoriaId}")
+    public List<Produto> listarPorCategoria(@PathVariable Long categoriaId) {
+        return produtoRepo.findByCategoriaId(categoriaId);
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Produto criar(@Valid @RequestBody Produto produto) {
