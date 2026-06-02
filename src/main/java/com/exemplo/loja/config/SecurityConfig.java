@@ -36,11 +36,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/**").permitAll()
                 // Paginas e recursos publicos
                 .requestMatchers("/", "/produtos", "/produtos/**",
-                        "/login", "/registro",
+                        "/login", "/registro", "/registro-loja",
                         "/css/**", "/js/**", "/webjars/**",
                         "/h2-console/**").permitAll()
                 // Area administrativa
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                // Area da loja / vendedor
+                .requestMatchers("/loja/**").hasRole("LOJA")
                 // Area do cliente (carrinho / pedidos)
                 .requestMatchers("/carrinho/**", "/checkout/**", "/pedidos/**").hasRole("CLIENTE")
                 // Demais rotas exigem autenticacao

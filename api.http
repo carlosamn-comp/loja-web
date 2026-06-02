@@ -25,7 +25,7 @@ Content-Type: application/json
   "nome": "Perifericos"
 }
 
-### 6) Criar um produto
+### 6) Criar um produto (marketplace: informe categoria E loja pelo id)
 POST {{host}}/api/produtos
 Content-Type: application/json
 
@@ -34,7 +34,8 @@ Content-Type: application/json
   "descricao": "RGB",
   "preco": 150.0,
   "estoque": 20,
-  "categoria": { "id": 3 }
+  "categoria": { "id": 3 },
+  "loja": { "id": 1 }
 }
 
 POST {{host}}/api/produtos
@@ -45,19 +46,12 @@ Content-Type: application/json
   "descricao": "Fantasia e Magia",
   "preco": 60.0,
   "estoque": 20,
-  "categoria": { "id": 2 }
+  "categoria": { "id": 2 },
+  "loja": { "id": 2 }
 }
 
-POST {{host}}/api/produtos
-Content-Type: application/json
-
-{
-  "nome": "RTX 5600 8GB",
-  "descricao": "Placa de video",
-  "preco": 2000.0,
-  "estoque": 20,
-  "categoria": { "id": 1 }
-}
+### Produtos de uma loja (troque o id)
+GET {{host}}/api/produtos/lojas/1
 
 ### 7) Atualizar um produto 
 PUT {{host}}/api/produtos/1
@@ -89,6 +83,37 @@ Content-Type: application/json
 
 ### Remover categoria (cuidado: categorias com produtos violam integridade)
 DELETE {{host}}/api/categorias/1
+
+### ==================== LOJAS / VENDEDORES (CRUD) ====================
+### Listar lojas
+GET {{host}}/api/lojas
+
+### Criar loja (a senha e recebida mas nunca devolvida no JSON)
+POST {{host}}/api/lojas
+Content-Type: application/json
+
+{
+  "nome": "Loja Nova",
+  "email": "novaloja@loja.com",
+  "senha": "123",
+  "cnpj": "33.333.333/0001-33",
+  "descricao": "Variedades"
+}
+
+### Atualizar loja (envie a senha)
+PUT {{host}}/api/lojas/1
+Content-Type: application/json
+
+{
+  "nome": "TechStore Plus",
+  "email": "loja@loja.com",
+  "senha": "123",
+  "cnpj": "11.111.111/0001-11",
+  "descricao": "Eletronicos premium"
+}
+
+### Remover loja
+DELETE {{host}}/api/lojas/3
 
 ### ==================== CLIENTES (CRUD) ====================
 ### Listar clientes

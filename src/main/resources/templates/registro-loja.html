@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(#{registroLoja.titulo})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container narrow">
+    <h1 th:text="#{registroLoja.titulo}">Cadastro de loja</h1>
+
+    <form th:action="@{/registro-loja}" th:object="${loja}" method="post">
+        <label>
+            <span th:text="#{loja.nome}">Nome</span>
+            <input type="text" th:field="*{nome}"/>
+            <small class="erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></small>
+        </label>
+
+        <label>
+            <span th:text="#{loja.email}">E-mail</span>
+            <input type="email" th:field="*{email}"/>
+            <small class="erro" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+        </label>
+
+        <label>
+            <span th:text="#{loja.senha}">Senha</span>
+            <input type="password" th:field="*{senha}"/>
+            <small class="erro" th:if="${#fields.hasErrors('senha')}" th:errors="*{senha}"></small>
+        </label>
+
+        <label>
+            <span th:text="#{loja.cnpj}">CNPJ</span>
+            <input type="text" th:field="*{cnpj}" placeholder="00.000.000/0000-00"/>
+            <small class="erro" th:if="${#fields.hasErrors('cnpj')}" th:errors="*{cnpj}"></small>
+        </label>
+
+        <label>
+            <span th:text="#{loja.descricao}">Descricao</span>
+            <textarea th:field="*{descricao}" rows="3"></textarea>
+        </label>
+
+        <button type="submit" th:text="#{registro.enviar}">Cadastrar</button>
+    </form>
+
+    <p class="muted">
+        <span th:text="#{registro.jaTemConta}">Ja tem conta?</span>
+        <a th:href="@{/login}" th:text="#{registro.entre}">Entre</a>
+    </p>
+</main>
+</body>
+</html>

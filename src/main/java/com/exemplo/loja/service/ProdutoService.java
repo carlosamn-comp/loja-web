@@ -1,6 +1,7 @@
 package com.exemplo.loja.service;
 
 import com.exemplo.loja.model.Categoria;
+import com.exemplo.loja.model.Loja;
 import com.exemplo.loja.model.Produto;
 import com.exemplo.loja.model.ProdutoImagem;
 import com.exemplo.loja.repository.CategoriaRepository;
@@ -14,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * Regras de negocio do CRUD de produtos, da consulta com filtros (R4) e do
- * gerenciamento das imagens dos produtos (armazenadas no banco como bytes).
+ * Regras de negocio do CRUD de produtos (agora pertencentes a uma loja), da
+ * consulta com filtros (R4) e do gerenciamento das imagens (bytes no banco).
  */
 @Service
 public class ProdutoService {
@@ -38,17 +39,22 @@ public class ProdutoService {
         return produtoRepo.findAll();
     }
 
+    public List<Produto> listarPorLoja(Long lojaId) {
+        return produtoRepo.findByLojaId(lojaId);
+    }
+
     public Produto buscar(Long id) {
         return produtoRepo.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("Produto nao encontrado: " + id));
     }
 
-    /** Consulta com filtros opcionais combinados (nome, categoria, faixa de preco). */
-    public List<Produto> filtrar(String nome, Long categoriaId,
+    /** Consulta com filtros opcionais combinados (nome, categoria, loja, faixa de preco). */
+    public List<Produto> filtrar(String nome, Long categoriaId, Long lojaId,
                                  BigDecimal precoMin, BigDecimal precoMax) {
         return produtoRepo.filtrar(
                 (nome == null || nome.isBlank()) ? null : nome,
                 categoriaId,
+                lojaId,
                 precoMin,
                 precoMax);
     }
@@ -58,14 +64,17 @@ public class ProdutoService {
                 () -> new IllegalArgumentException("Categoria inexistente: " + categoriaId));
     }
 
+    /** Cria um produto vinculado a loja (dona) informada. */
     @Transactional
-    public Produto salvar(Produto produto, Long categoriaId, MultipartFile[] imagens) {
+    public Produto salvar(Produto produto, Long categoriaId, Loja loja, MultipartFile[] imagens) {
         produto.setCategoria(resolverCategoria(categoriaId));
+        produto.setLoja(loja);
         Produto salvo = produtoRepo.save(produto);
         anexarImagens(salvo, imagens);
         return salvo;
     }
 
+    /** Atualiza um produto mantendo a loja dona original. */
     @Transactional
     public Produto atualizar(Long id, Produto dados, Long categoriaId, MultipartFile[] imagens) {
         Produto existente = buscar(id);

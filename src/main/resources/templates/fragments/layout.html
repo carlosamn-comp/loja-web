@@ -22,9 +22,15 @@
             <a th:href="@{/pedidos}" th:text="#{nav.meusPedidos}">Meus pedidos</a>
         </th:block>
 
+        <!-- Loja / vendedor autenticado -->
+        <th:block sec:authorize="hasRole('LOJA')">
+            <a th:href="@{/loja/produtos}" th:text="#{nav.meusProdutos}">Meus produtos</a>
+            <a th:href="@{/loja/pedidos}" th:text="#{nav.minhasVendas}">Minhas vendas</a>
+        </th:block>
+
         <!-- Administrador autenticado -->
         <th:block sec:authorize="hasRole('ADMIN')">
-            <a th:href="@{/admin/produtos}" th:text="#{nav.admin}">Administracao</a>
+            <a th:href="@{/admin/clientes}" th:text="#{nav.admin}">Administracao</a>
         </th:block>
 
         <!-- Nao autenticado -->
@@ -55,9 +61,15 @@
 <!-- ===================== SUB-NAVEGACAO ADMIN ===================== -->
 <nav th:fragment="adminbar" class="adminbar">
     <a th:href="@{/admin/clientes}" th:text="#{admin.nav.clientes}">Clientes</a>
+    <a th:href="@{/admin/lojas}" th:text="#{admin.nav.lojas}">Lojas</a>
     <a th:href="@{/admin/categorias}" th:text="#{admin.nav.categorias}">Categorias</a>
-    <a th:href="@{/admin/produtos}" th:text="#{admin.nav.produtos}">Produtos</a>
     <a th:href="@{/admin/pedidos}" th:text="#{admin.nav.pedidos}">Pedidos</a>
+</nav>
+
+<!-- ===================== SUB-NAVEGACAO LOJA ===================== -->
+<nav th:fragment="lojabar" class="adminbar">
+    <a th:href="@{/loja/produtos}" th:text="#{nav.meusProdutos}">Meus produtos</a>
+    <a th:href="@{/loja/pedidos}" th:text="#{nav.minhasVendas}">Minhas vendas</a>
 </nav>
 
 </body>

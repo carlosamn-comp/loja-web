@@ -3,6 +3,7 @@ package com.exemplo.loja.service;
 import com.exemplo.loja.model.Cliente;
 import com.exemplo.loja.repository.AdministradorRepository;
 import com.exemplo.loja.repository.ClienteRepository;
+import com.exemplo.loja.repository.LojaRepository;
 import java.util.List;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,13 +18,16 @@ public class ClienteService {
 
     private final ClienteRepository clienteRepo;
     private final AdministradorRepository administradorRepo;
+    private final LojaRepository lojaRepo;
     private final PasswordEncoder passwordEncoder;
 
     public ClienteService(ClienteRepository clienteRepo,
                           AdministradorRepository administradorRepo,
+                          LojaRepository lojaRepo,
                           PasswordEncoder passwordEncoder) {
         this.clienteRepo = clienteRepo;
         this.administradorRepo = administradorRepo;
+        this.lojaRepo = lojaRepo;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -41,14 +45,16 @@ public class ClienteService {
                 () -> new IllegalArgumentException("Cliente nao encontrado: " + email));
     }
 
-    /** True se o e-mail nao esta em uso por nenhum cliente nem administrador. */
+    /** True se o e-mail nao esta em uso por cliente, administrador ou loja. */
     public boolean emailDisponivel(String email) {
-        return !administradorRepo.existsByEmail(email) && !clienteRepo.existsByEmail(email);
+        return !administradorRepo.existsByEmail(email)
+                && !lojaRepo.existsByEmail(email)
+                && !clienteRepo.existsByEmail(email);
     }
 
     /** Verifica disponibilidade do e-mail considerando que o proprio cliente pode mante-lo. */
     public boolean emailDisponivelParaEdicao(String email, Long clienteId) {
-        if (administradorRepo.existsByEmail(email)) {
+        if (administradorRepo.existsByEmail(email) || lojaRepo.existsByEmail(email)) {
             return false;
         }
         return clienteRepo.findByEmail(email)

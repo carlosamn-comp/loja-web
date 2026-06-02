@@ -19,7 +19,6 @@ import jakarta.validation.constraints.Past;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import org.hibernate.validator.constraints.br.CPF;
 
 /**
  * Cliente da loja. Possui credenciais (e-mail + senha) e atua como usuario
@@ -52,8 +51,8 @@ public class Cliente {
     @Column(nullable = false, length = 100)
     private String senha;
 
+    /** CPF apenas obrigatorio e unico (sem validacao de formato — e um modelo). */
     @NotBlank
-    @CPF
     @Column(nullable = false, unique = true, length = 14)
     private String cpf;
 

@@ -19,6 +19,8 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
 
     List<Produto> findByCategoriaId(Long categoriaId);
 
+    List<Produto> findByLojaId(Long lojaId);
+
     List<Produto> findByPrecoLessThanEqual(BigDecimal precoMaximo);
 
     // Consulta JPQL explicita
@@ -34,11 +36,13 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
     @Query("SELECT p FROM Produto p WHERE "
             + "(:nome IS NULL OR LOWER(p.nome) LIKE LOWER(CONCAT('%', :nome, '%'))) AND "
             + "(:categoriaId IS NULL OR p.categoria.id = :categoriaId) AND "
+            + "(:lojaId IS NULL OR p.loja.id = :lojaId) AND "
             + "(:precoMin IS NULL OR p.preco >= :precoMin) AND "
             + "(:precoMax IS NULL OR p.preco <= :precoMax) "
             + "ORDER BY p.nome")
     List<Produto> filtrar(@Param("nome") String nome,
                           @Param("categoriaId") Long categoriaId,
+                          @Param("lojaId") Long lojaId,
                           @Param("precoMin") BigDecimal precoMin,
                           @Param("precoMax") BigDecimal precoMax);
 }

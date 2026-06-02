@@ -1,9 +1,12 @@
-package com.exemplo.loja.web.admin;
+package com.exemplo.loja.web.loja;
 
+import com.exemplo.loja.model.Loja;
 import com.exemplo.loja.model.Produto;
 import com.exemplo.loja.service.CategoriaService;
+import com.exemplo.loja.service.LojaService;
 import com.exemplo.loja.service.ProdutoService;
 import jakarta.validation.Valid;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.context.MessageSource;
@@ -20,28 +23,44 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * CRUD administrativo de produtos (R3), incluindo upload de imagens (no maximo
- * {@link ProdutoService#MAX_IMAGENS}). Requer perfil ADMIN.
+ * Gestao de produtos pela LOJA logada (R3): a loja so ve e edita os seus
+ * proprios produtos. Inclui upload de imagens (no maximo {@link ProdutoService#MAX_IMAGENS}).
  */
 @Controller
-@RequestMapping("/admin/produtos")
-public class ProdutoAdminController {
+@RequestMapping("/loja/produtos")
+public class ProdutoLojaController {
 
     private final ProdutoService produtoService;
     private final CategoriaService categoriaService;
+    private final LojaService lojaService;
     private final MessageSource messageSource;
 
-    public ProdutoAdminController(ProdutoService produtoService, CategoriaService categoriaService,
-                                  MessageSource messageSource) {
+    public ProdutoLojaController(ProdutoService produtoService, CategoriaService categoriaService,
+                                 LojaService lojaService, MessageSource messageSource) {
         this.produtoService = produtoService;
         this.categoriaService = categoriaService;
+        this.lojaService = lojaService;
         this.messageSource = messageSource;
     }
 
+    private Loja lojaLogada(Principal principal) {
+        return lojaService.buscarPorEmail(principal.getName());
+    }
+
+    /** Garante que o produto pertence a loja logada (senao trata como inexistente). */
+    private Produto produtoDaLoja(Long id, Loja loja) {
+        Produto p = produtoService.buscar(id);
+        if (p.getLoja() == null || !p.getLoja().getId().equals(loja.getId())) {
+            throw new IllegalArgumentException("Produto nao encontrado: " + id);
+        }
+        return p;
+    }
+
     @GetMapping
-    public String listar(Model model) {
-        model.addAttribute("produtos", produtoService.listar());
-        return "admin/produtos/lista";
+    public String listar(Principal principal, Model model) {
+        Loja loja = lojaLogada(principal);
+        model.addAttribute("produtos", produtoService.listarPorLoja(loja.getId()));
+        return "loja/produtos/lista";
     }
 
     @GetMapping("/novo")
@@ -49,16 +68,17 @@ public class ProdutoAdminController {
         model.addAttribute("produto", new Produto());
         model.addAttribute("categorias", categoriaService.listar());
         model.addAttribute("edicao", false);
-        return "admin/produtos/form";
+        return "loja/produtos/form";
     }
 
     @GetMapping("/{id}/editar")
-    public String formEditar(@PathVariable Long id, Model model) {
-        model.addAttribute("produto", produtoService.buscar(id));
+    public String formEditar(@PathVariable Long id, Principal principal, Model model) {
+        Loja loja = lojaLogada(principal);
+        model.addAttribute("produto", produtoDaLoja(id, loja));
         model.addAttribute("categorias", categoriaService.listar());
         model.addAttribute("imagemIds", produtoService.listarImagemIds(id));
         model.addAttribute("edicao", true);
-        return "admin/produtos/form";
+        return "loja/produtos/form";
     }
 
     @PostMapping("/novo")
@@ -66,7 +86,7 @@ public class ProdutoAdminController {
                         BindingResult result,
                         @RequestParam(required = false) Long categoriaId,
                         @RequestParam(value = "arquivos", required = false) MultipartFile[] arquivos,
-                        Model model) {
+                        Principal principal, Model model) {
         if (categoriaId == null) {
             result.rejectValue("categoria", "produto.categoria.obrigatoria");
         }
@@ -75,10 +95,10 @@ public class ProdutoAdminController {
             model.addAttribute("categorias", categoriaService.listar());
             model.addAttribute("errosImagem", errosImagem);
             model.addAttribute("edicao", false);
-            return "admin/produtos/form";
+            return "loja/produtos/form";
         }
-        produtoService.salvar(produto, categoriaId, arquivos);
-        return "redirect:/admin/produtos";
+        produtoService.salvar(produto, categoriaId, lojaLogada(principal), arquivos);
+        return "redirect:/loja/produtos";
     }
 
     @PostMapping("/{id}/editar")
@@ -87,7 +107,9 @@ public class ProdutoAdminController {
                             BindingResult result,
                             @RequestParam(required = false) Long categoriaId,
                             @RequestParam(value = "arquivos", required = false) MultipartFile[] arquivos,
-                            Model model) {
+                            Principal principal, Model model) {
+        Loja loja = lojaLogada(principal);
+        produtoDaLoja(id, loja); // valida posse
         if (categoriaId == null) {
             result.rejectValue("categoria", "produto.categoria.obrigatoria");
         }
@@ -97,29 +119,27 @@ public class ProdutoAdminController {
             model.addAttribute("imagemIds", produtoService.listarImagemIds(id));
             model.addAttribute("errosImagem", errosImagem);
             model.addAttribute("edicao", true);
-            return "admin/produtos/form";
+            return "loja/produtos/form";
         }
         produtoService.atualizar(id, produto, categoriaId, arquivos);
-        return "redirect:/admin/produtos/" + id + "/editar";
+        return "redirect:/loja/produtos/" + id + "/editar";
     }
 
     @PostMapping("/{id}/excluir")
-    public String excluir(@PathVariable Long id) {
+    public String excluir(@PathVariable Long id, Principal principal) {
+        produtoDaLoja(id, lojaLogada(principal));
         produtoService.excluir(id);
-        return "redirect:/admin/produtos";
+        return "redirect:/loja/produtos";
     }
 
     @PostMapping("/{produtoId}/imagens/{imagemId}/excluir")
-    public String excluirImagem(@PathVariable Long produtoId, @PathVariable Long imagemId) {
+    public String excluirImagem(@PathVariable Long produtoId, @PathVariable Long imagemId,
+                                Principal principal) {
+        produtoDaLoja(produtoId, lojaLogada(principal));
         produtoService.excluirImagem(imagemId);
-        return "redirect:/admin/produtos/" + produtoId + "/editar";
+        return "redirect:/loja/produtos/" + produtoId + "/editar";
     }
 
-    /**
-     * Valida os arquivos enviados: cada um deve ser uma imagem e o total
-     * (existentes + novos) nao pode ultrapassar o limite. Retorna a lista de
-     * mensagens de erro ja localizadas (vazia se estiver tudo certo).
-     */
     private List<String> validarImagens(MultipartFile[] arquivos, long existentes) {
         List<String> erros = new ArrayList<>();
         if (arquivos == null) {

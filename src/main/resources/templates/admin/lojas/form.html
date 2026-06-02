@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(#{admin.lojas.titulo})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<nav th:replace="~{fragments/layout :: adminbar}"></nav>
+
+<main class="container narrow">
+    <h1 th:text="${edicao} ? #{crud.editar} : #{crud.novo}">Loja</h1>
+
+    <form th:object="${loja}" method="post"
+          th:action="${edicao} ? @{/admin/lojas/{id}/editar(id=*{id})} : @{/admin/lojas/novo}">
+
+        <label>
+            <span th:text="#{loja.nome}">Nome</span>
+            <input type="text" th:field="*{nome}"/>
+            <small class="erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></small>
+        </label>
+
+        <label>
+            <span th:text="#{loja.email}">E-mail</span>
+            <input type="email" th:field="*{email}"/>
+            <small class="erro" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+        </label>
+
+        <input type="hidden" th:if="${edicao}" th:field="*{senha}"/>
+        <label th:unless="${edicao}">
+            <span th:text="#{loja.senha}">Senha</span>
+            <input type="password" th:field="*{senha}"/>
+            <small class="erro" th:if="${#fields.hasErrors('senha')}" th:errors="*{senha}"></small>
+        </label>
+        <label th:if="${edicao}">
+            <span th:text="#{loja.senha}">Senha</span>
+            <input type="password" name="novaSenha"/>
+            <small class="muted" th:text="#{cliente.senhaEdicao}">Deixe em branco para manter.</small>
+        </label>
+
+        <label>
+            <span th:text="#{loja.cnpj}">CNPJ</span>
+            <input type="text" th:field="*{cnpj}" placeholder="00.000.000/0000-00"/>
+            <small class="erro" th:if="${#fields.hasErrors('cnpj')}" th:errors="*{cnpj}"></small>
+        </label>
+
+        <label>
+            <span th:text="#{loja.descricao}">Descricao</span>
+            <textarea th:field="*{descricao}" rows="3"></textarea>
+        </label>
+
+        <div class="actions">
+            <button type="submit" th:text="#{crud.salvar}">Salvar</button>
+            <a class="btn secondary" th:href="@{/admin/lojas}" th:text="#{crud.cancelar}">Cancelar</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

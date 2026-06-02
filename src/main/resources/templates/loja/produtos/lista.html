@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head(#{admin.produtos.titulo})}"></head>
+<head th:replace="~{fragments/layout :: head(#{loja.produtos.titulo})}"></head>
 <body>
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
-<nav th:replace="~{fragments/layout :: adminbar}"></nav>
+<nav th:replace="~{fragments/layout :: lojabar}"></nav>
 
 <main class="container">
-    <h1 th:text="#{admin.produtos.titulo}">Gestao de produtos</h1>
+    <h1 th:text="#{loja.produtos.titulo}">Meus produtos</h1>
 
-    <p><a class="btn" th:href="@{/admin/produtos/novo}" th:text="#{crud.novo}">Novo</a></p>
+    <p><a class="btn" th:href="@{/loja/produtos/novo}" th:text="#{crud.novo}">Novo</a></p>
 
     <table>
         <thead>
@@ -29,9 +29,9 @@
             <td th:text="${#numbers.formatDecimal(p.preco, 1, 2)}">0,00</td>
             <td th:text="${p.estoque}">0</td>
             <td class="actions">
-                <a class="btn" th:href="@{/admin/produtos/{id}/editar(id=${p.id})}"
+                <a class="btn" th:href="@{/loja/produtos/{id}/editar(id=${p.id})}"
                    th:text="#{crud.editar}">Editar</a>
-                <form th:action="@{/admin/produtos/{id}/excluir(id=${p.id})}" method="post"
+                <form th:action="@{/loja/produtos/{id}/excluir(id=${p.id})}" method="post"
                       th:onsubmit="'return confirm(\'' + #{crud.confirmaExcluir} + '\');'">
                     <button type="submit" class="danger" th:text="#{crud.excluir}">Excluir</button>
                 </form>
