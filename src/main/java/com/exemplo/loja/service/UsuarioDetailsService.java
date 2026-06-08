@@ -1,66 +1,58 @@
 package com.exemplo.loja.service;
 
-import com.exemplo.loja.model.Administrador;
-import com.exemplo.loja.model.Cliente;
-import com.exemplo.loja.model.Loja;
-import com.exemplo.loja.repository.AdministradorRepository;
-import com.exemplo.loja.repository.ClienteRepository;
-import com.exemplo.loja.repository.LojaRepository;
+import com.exemplo.loja.model.Usuario;
+import com.exemplo.loja.repository.UsuarioRepository;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
- * Servico de autenticacao que resolve, a partir de um e-mail, um dos tres
- * perfis: {@link Administrador} (ROLE_ADMIN), {@link Loja} (ROLE_LOJA) ou
- * {@link Cliente} (ROLE_CLIENTE).
+ * Autenticacao do sistema.
  *
- * Precedencia: administrador, depois loja, depois cliente. Os cadastros
- * impedem reutilizar um e-mail ja usado por outro perfil.
+ * O ADMINISTRADOR e definido DIRETAMENTE NESTE ARQUIVO (email/senha/role abaixo),
+ * portanto seu login NAO consulta o banco de dados.
+ *
+ * Os demais usuarios (lojas e clientes) sao resolvidos com UMA UNICA consulta
+ * ({@code usuarioRepo.findByEmail}); a role ja vem gravada no proprio usuario
+ * (definida pelo construtor da subclasse), entao nao e preciso descobrir o perfil
+ * tentando varios repositorios.
  */
 @Service
 public class UsuarioDetailsService implements UserDetailsService {
 
-    private final AdministradorRepository administradorRepo;
-    private final LojaRepository lojaRepo;
-    private final ClienteRepository clienteRepo;
+    /** Credenciais do administrador — fixas no codigo (nao ficam no banco). */
+    public static final String ADMIN_EMAIL = "admin@loja.com";
+    private static final String ADMIN_SENHA = "123";
 
-    public UsuarioDetailsService(AdministradorRepository administradorRepo,
-                                 LojaRepository lojaRepo,
-                                 ClienteRepository clienteRepo) {
-        this.administradorRepo = administradorRepo;
-        this.lojaRepo = lojaRepo;
-        this.clienteRepo = clienteRepo;
+    private final UsuarioRepository usuarioRepo;
+    private final String adminSenhaHash;
+
+    public UsuarioDetailsService(UsuarioRepository usuarioRepo, PasswordEncoder passwordEncoder) {
+        this.usuarioRepo = usuarioRepo;
+        // codifica a senha do admin uma unica vez, na construcao do bean
+        this.adminSenhaHash = passwordEncoder.encode(ADMIN_SENHA);
     }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Administrador admin = administradorRepo.findByEmail(email).orElse(null);
-        if (admin != null) {
-            return User.withUsername(admin.getEmail())
-                    .password(admin.getSenha())
+        // 1) Administrador: resolvido direto no arquivo, sem tocar o banco
+        if (ADMIN_EMAIL.equalsIgnoreCase(email)) {
+            return User.withUsername(ADMIN_EMAIL)
+                    .password(adminSenhaHash)
                     .roles("ADMIN")
                     .build();
         }
 
-        Loja loja = lojaRepo.findByEmail(email).orElse(null);
-        if (loja != null) {
-            return User.withUsername(loja.getEmail())
-                    .password(loja.getSenha())
-                    .roles("LOJA")
-                    .build();
-        }
+        // 2) Loja ou Cliente: uma unica consulta; a role ja vem no usuario
+        Usuario usuario = usuarioRepo.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario nao encontrado: " + email));
 
-        Cliente cliente = clienteRepo.findByEmail(email).orElse(null);
-        if (cliente != null) {
-            return User.withUsername(cliente.getEmail())
-                    .password(cliente.getSenha())
-                    .roles("CLIENTE")
-                    .build();
-        }
-
-        throw new UsernameNotFoundException("Usuario nao encontrado: " + email);
+        return User.withUsername(usuario.getEmail())
+                .password(usuario.getSenha())
+                .roles(usuario.getRole()) // "LOJA" -> ROLE_LOJA, "CLIENTE" -> ROLE_CLIENTE
+                .build();
     }
 }

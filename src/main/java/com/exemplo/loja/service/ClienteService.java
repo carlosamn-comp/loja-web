@@ -1,9 +1,8 @@
 package com.exemplo.loja.service;
 
 import com.exemplo.loja.model.Cliente;
-import com.exemplo.loja.repository.AdministradorRepository;
 import com.exemplo.loja.repository.ClienteRepository;
-import com.exemplo.loja.repository.LojaRepository;
+import com.exemplo.loja.repository.UsuarioRepository;
 import java.util.List;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,22 +11,22 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Regras de negocio do cadastro de clientes, reaproveitadas pelo auto-cadastro
  * (/registro) e pelo CRUD administrativo (/admin/clientes).
+ *
+ * A unicidade de e-mail e verificada via {@link UsuarioRepository} (abrange lojas
+ * E clientes, pois compartilham a tabela "usuario") e tambem contra o e-mail do
+ * administrador, que e fixo no codigo ({@link UsuarioDetailsService#ADMIN_EMAIL}).
  */
 @Service
 public class ClienteService {
 
     private final ClienteRepository clienteRepo;
-    private final AdministradorRepository administradorRepo;
-    private final LojaRepository lojaRepo;
+    private final UsuarioRepository usuarioRepo;
     private final PasswordEncoder passwordEncoder;
 
-    public ClienteService(ClienteRepository clienteRepo,
-                          AdministradorRepository administradorRepo,
-                          LojaRepository lojaRepo,
+    public ClienteService(ClienteRepository clienteRepo, UsuarioRepository usuarioRepo,
                           PasswordEncoder passwordEncoder) {
         this.clienteRepo = clienteRepo;
-        this.administradorRepo = administradorRepo;
-        this.lojaRepo = lojaRepo;
+        this.usuarioRepo = usuarioRepo;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -45,20 +44,19 @@ public class ClienteService {
                 () -> new IllegalArgumentException("Cliente nao encontrado: " + email));
     }
 
-    /** True se o e-mail nao esta em uso por cliente, administrador ou loja. */
+    /** E-mail livre se nao for o do admin e nao existir em nenhum usuario (loja/cliente). */
     public boolean emailDisponivel(String email) {
-        return !administradorRepo.existsByEmail(email)
-                && !lojaRepo.existsByEmail(email)
-                && !clienteRepo.existsByEmail(email);
+        return !UsuarioDetailsService.ADMIN_EMAIL.equalsIgnoreCase(email)
+                && !usuarioRepo.existsByEmail(email);
     }
 
-    /** Verifica disponibilidade do e-mail considerando que o proprio cliente pode mante-lo. */
+    /** Disponibilidade considerando que o proprio cliente pode manter o e-mail. */
     public boolean emailDisponivelParaEdicao(String email, Long clienteId) {
-        if (administradorRepo.existsByEmail(email) || lojaRepo.existsByEmail(email)) {
+        if (UsuarioDetailsService.ADMIN_EMAIL.equalsIgnoreCase(email)) {
             return false;
         }
-        return clienteRepo.findByEmail(email)
-                .map(c -> c.getId().equals(clienteId))
+        return usuarioRepo.findByEmail(email)
+                .map(u -> u.getId().equals(clienteId))
                 .orElse(true);
     }
 
@@ -80,10 +78,7 @@ public class ClienteService {
         return clienteRepo.save(cliente);
     }
 
-    /**
-     * Atualiza um cliente existente. A senha so e re-codificada se uma nova
-     * senha (nao vazia) for informada; caso contrario a senha atual e mantida.
-     */
+    /** A senha so e re-codificada se uma nova senha (nao vazia) for informada. */
     @Transactional
     public Cliente atualizar(Long id, Cliente dados, String novaSenha) {
         Cliente existente = buscar(id);

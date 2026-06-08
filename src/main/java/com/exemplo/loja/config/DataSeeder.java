@@ -1,12 +1,10 @@
 package com.exemplo.loja.config;
 
-import com.exemplo.loja.model.Administrador;
 import com.exemplo.loja.model.Categoria;
 import com.exemplo.loja.model.Cliente;
 import com.exemplo.loja.model.Loja;
 import com.exemplo.loja.model.Produto;
 import com.exemplo.loja.model.Sexo;
-import com.exemplo.loja.repository.AdministradorRepository;
 import com.exemplo.loja.repository.CategoriaRepository;
 import com.exemplo.loja.repository.ClienteRepository;
 import com.exemplo.loja.repository.LojaRepository;
@@ -21,10 +19,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Carga inicial de dados (marketplace) executada na inicializacao.
+ * Carga inicial de dados (marketplace).
  *
- * Popula o administrador, um cliente, DUAS lojas e produtos de exemplo
- * vinculados a essas lojas. Todas as credenciais usam a senha "123".
+ * Popula um cliente, DUAS lojas e produtos de exemplo vinculados a essas lojas.
+ * O ADMINISTRADOR nao e semeado aqui: ele e definido diretamente no codigo, em
+ * {@link com.exemplo.loja.service.UsuarioDetailsService}. Todas as credenciais
+ * usam a senha "123".
  */
 @Configuration
 public class DataSeeder {
@@ -32,20 +32,12 @@ public class DataSeeder {
     private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
 
     @Bean
-    public CommandLineRunner seed(AdministradorRepository administradorRepo,
-                                  LojaRepository lojaRepo,
+    public CommandLineRunner seed(LojaRepository lojaRepo,
                                   ClienteRepository clienteRepo,
                                   CategoriaRepository categoriaRepo,
                                   ProdutoRepository produtoRepo,
                                   PasswordEncoder passwordEncoder) {
         return args -> {
-            // ---------- Administrador ----------
-            if (!administradorRepo.existsByEmail("admin@loja.com")) {
-                administradorRepo.save(new Administrador(
-                        "Administrador", "admin@loja.com", passwordEncoder.encode("123")));
-                log.info("Administrador criado: admin@loja.com / 123");
-            }
-
             // ---------- Cliente de demonstracao ----------
             if (!clienteRepo.existsByEmail("cliente@loja.com")) {
                 clienteRepo.save(new Cliente(
@@ -95,8 +87,8 @@ public class DataSeeder {
             }
 
             log.info("===== Carga inicial (marketplace) concluida =====");
+            log.info("Admin (fixo no codigo): admin@loja.com / 123");
             log.info("Catalogo publico:  http://localhost:8080/produtos");
-            log.info("Login:             http://localhost:8080/login (senha de todos: 123)");
         };
     }
 

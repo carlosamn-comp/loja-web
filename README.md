@@ -76,3 +76,92 @@ em [`api.http`](api.http).
 
 Spring Boot 3.3 · Spring MVC · Spring Data JPA · Spring Security · Thymeleaf ·
 Bean Validation · H2 (arquivo) · Java 17 · Maven.
+
+---
+
+## Estrutura do projeto (onde está o quê)
+
+Pacote base: `com.exemplo.loja`.
+
+```
+src/main/java/com/exemplo/loja/
+├── LojaWebApplication.java      # classe @SpringBootApplication (ponto de entrada / main)
+│
+├── model/                       # ENTIDADES JPA (@Entity) — o "M" do MVC
+│   ├── Usuario.java             # classe-mãe ABSTRATA (herança SINGLE_TABLE); campos
+│   │                            #   comuns: nome, email (único), senha, role
+│   ├── Loja.java                # extends Usuario; role "LOJA" no construtor; + cnpj, descricao
+│   ├── Cliente.java             # extends Usuario; role "CLIENTE" no construtor; + cpf, sexo...
+│   ├── Categoria.java           # categoria de produtos (1:N com Produto)
+│   ├── Produto.java             # pertence a uma Loja e a uma Categoria
+│   ├── ProdutoImagem.java       # imagem do produto (bytes/BLOB no banco) — máx. 10
+│   ├── Pedido.java              # pedido do cliente (N:1 Cliente, 1:N ItemPedido) + enum Status
+│   ├── ItemPedido.java          # item do pedido (produto + quantidade)
+│   └── Sexo.java                # enum MASCULINO/FEMININO/OUTRO
+│
+├── repository/                  # DAOs (Spring Data JPA) — interfaces JpaRepository
+│   ├── UsuarioRepository.java   # busca por e-mail p/ login e unicidade (abrange loja+cliente)
+│   ├── LojaRepository, ClienteRepository, CategoriaRepository,
+│   ├── ProdutoRepository.java   # + query @Query "filtrar" (nome/categoria/loja/preço) R4
+│   ├── ProdutoImagemRepository, PedidoRepository.java  # PedidoRepo usa @EntityGraph
+│
+├── service/                     # REGRAS DE NEGÓCIO (@Service)
+│   ├── UsuarioDetailsService.java  # AUTENTICAÇÃO: admin FIXO no código + loja/cliente do banco
+│   ├── LojaService, ClienteService, CategoriaService,
+│   ├── ProdutoService.java      # CRUD + filtros + imagens
+│   ├── PedidoService.java       # checkout transacional + atualização de status
+│   └── EmailService.java        # e-mail SIMULADO (loga no console)
+│
+├── web/                         # CONTROLLERS MVC (@Controller) — o "C" do MVC
+│   ├── ProdutoController.java   # catálogo público (/produtos) com filtros (R4)
+│   ├── AuthController.java      # /login, /registro (cliente), /registro-loja
+│   ├── PedidoClienteController.java  # /pedidos (meus pedidos do cliente, R6)
+│   ├── ControllerModelAdvice.java    # expõe a URI atual (troca de idioma)
+│   ├── admin/                   # área do ADMIN: clientes, lojas, categorias, pedidos
+│   ├── loja/                    # área da LOJA: seus produtos (R3) e suas vendas (R7)
+│   └── carrinho/                # CarrinhoSession (@SessionScope) + CarrinhoController (R5)
+│
+├── rest/                        # REST-API (@RestController) — AA-2, sob /api/**
+│   └── Cliente/Loja/Categoria/Produto/PedidoRestController.java
+│
+├── dto/                         # objetos de entrada da REST (PedidoRequest, ItemPedidoRequest)
+├── config/
+│   ├── SecurityConfig.java      # Spring Security (acessos por perfil, BCrypt, CSRF, H2)
+│   ├── WebConfig.java           # i18n (locale + interceptor) e validação localizada
+│   └── DataSeeder.java          # carga inicial (cliente, 2 lojas, produtos) — admin NÃO
+└── exception/
+    ├── GlobalExceptionHandler.java   # erros das telas → error.html
+    ├── ApiExceptionHandler.java      # erros da REST → JSON
+    └── EstoqueInsuficienteException.java
+
+src/main/resources/
+├── application.properties       # H2 em arquivo, JPA, i18n, upload de imagens
+├── messages.properties / messages_en.properties   # i18n PT / EN (R8)
+├── static/css/estilo.css        # CSS
+└── templates/                   # VISÕES Thymeleaf — o "V" do MVC
+    ├── fragments/layout.html    # navbar (links por perfil) + barras admin/loja
+    ├── produtos.html, login.html, registro.html, registro-loja.html, carrinho.html, error.html
+    ├── admin/{clientes,lojas,categorias,pedidos}/   e   loja/{produtos,pedidos}/
+    └── pedidos/meus-pedidos.html
+```
+
+## Pontos importantes
+
+- **Herança JPA (Aula07):** `Usuario` é a classe-mãe abstrata e `Loja`/`Cliente` são
+  subclasses. Estratégia **`SINGLE_TABLE`** → tudo numa tabela `usuario` com a coluna
+  discriminadora `tipo`. Cada subclasse **define a sua `role` no construtor**
+  (`"LOJA"`/`"CLIENTE"`), lida diretamente no login.
+- **Admin fixo no código:** o administrador (`admin@loja.com` / `123`) é definido em
+  `UsuarioDetailsService` e **não fica no banco** — o login dele não faz consulta ao
+  banco. Loja e cliente são resolvidos em **uma única consulta** (`findByEmail`),
+  usando a `role` já gravada.
+- **Marketplace:** cada produto pertence a uma **loja**; um cliente compra de **várias
+  lojas** no mesmo pedido. A loja gerencia só os seus produtos e vê só as suas vendas.
+- **Imagens no banco:** armazenadas como bytes (BLOB) em `produto_imagem`, servidas por
+  `GET /produtos/imagens/{id}` com o content-type correto (máx. 10 por produto).
+- **Persistência:** H2 em arquivo (`data/lojadb.mv.db`). Para zerar, pare a app e apague
+  a pasta `data/`.
+- **CPF/CNPJ:** apenas obrigatórios e únicos (sem validação de formato — é um modelo).
+- **Camadas (MVC):** `model` (entidades) → `repository` (DAOs) → `service` (regras) →
+  `web`/`rest` (controllers) → `templates` (views). Veja os comentários no topo de cada
+  classe para o papel dela.

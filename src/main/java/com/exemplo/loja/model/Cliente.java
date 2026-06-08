@@ -1,18 +1,13 @@
 package com.exemplo.loja.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -21,39 +16,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Cliente da loja. Possui credenciais (e-mail + senha) e atua como usuario
- * com perfil ROLE_CLIENTE no Spring Security. Lado "um" do relacionamento
- * 1:N com Pedido.
+ * Cliente da loja. Subclasse de {@link Usuario} (herda nome, email, senha e role).
+ * O construtor define a role como "CLIENTE" (perfil ROLE_CLIENTE). Lado "um" do
+ * relacionamento 1:N com Pedido.
+ *
+ * Como usa SINGLE_TABLE, os campos especificos do cliente (cpf, sexo, etc.) ficam
+ * na tabela "usuario" e sao nulos nas linhas que sao lojas — por isso o banco os
+ * mantem como colunas anulaveis (a obrigatoriedade vale via Bean Validation).
  */
 @Entity
-@Table(name = "cliente")
-public class Cliente {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @NotBlank
-    @Column(nullable = false, length = 120)
-    private String nome;
-
-    @Email
-    @NotBlank
-    @Column(nullable = false, unique = true, length = 120)
-    private String email;
-
-    /**
-     * Senha (armazenada com hash BCrypt). WRITE_ONLY: pode ser recebida em JSON
-     * (ex.: POST da REST-API) mas nunca e devolvida em respostas JSON.
-     */
-    @NotBlank
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @Column(nullable = false, length = 100)
-    private String senha;
+@DiscriminatorValue("CLIENTE")
+public class Cliente extends Usuario {
 
     /** CPF apenas obrigatorio e unico (sem validacao de formato — e um modelo). */
     @NotBlank
-    @Column(nullable = false, unique = true, length = 14)
+    @Column(unique = true, length = 14)
     private String cpf;
 
     @Column(length = 20)
@@ -61,12 +38,11 @@ public class Cliente {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @Column(length = 10)
     private Sexo sexo;
 
     @NotNull
     @Past
-    @Column(nullable = false)
     private LocalDate dataNascimento;
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -74,49 +50,17 @@ public class Cliente {
     private List<Pedido> pedidos = new ArrayList<>();
 
     public Cliente() {
+        super();
+        setRole("CLIENTE");
     }
 
     public Cliente(String nome, String email, String senha, String cpf,
                    String telefone, Sexo sexo, LocalDate dataNascimento) {
-        this.nome = nome;
-        this.email = email;
-        this.senha = senha;
+        super(nome, email, senha, "CLIENTE");
         this.cpf = cpf;
         this.telefone = telefone;
         this.sexo = sexo;
         this.dataNascimento = dataNascimento;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getSenha() {
-        return senha;
-    }
-
-    public void setSenha(String senha) {
-        this.senha = senha;
     }
 
     public String getCpf() {
@@ -161,6 +105,6 @@ public class Cliente {
 
     @Override
     public String toString() {
-        return "Cliente{id=" + id + ", nome='" + nome + "', email='" + email + "'}";
+        return "Cliente{id=" + getId() + ", nome='" + getNome() + "', email='" + getEmail() + "'}";
     }
 }

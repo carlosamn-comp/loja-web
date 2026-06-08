@@ -1,9 +1,8 @@
 package com.exemplo.loja.service;
 
 import com.exemplo.loja.model.Loja;
-import com.exemplo.loja.repository.AdministradorRepository;
-import com.exemplo.loja.repository.ClienteRepository;
 import com.exemplo.loja.repository.LojaRepository;
+import com.exemplo.loja.repository.UsuarioRepository;
 import java.util.List;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,20 +11,21 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Regras de negocio do cadastro de lojas/vendedores, reaproveitadas pelo
  * auto-cadastro (/registro-loja) e pelo CRUD administrativo (/admin/lojas).
+ *
+ * O e-mail e unico entre TODOS os usuarios (verificado via {@link UsuarioRepository})
+ * e nao pode ser o do administrador; o CNPJ e unico entre as lojas.
  */
 @Service
 public class LojaService {
 
     private final LojaRepository lojaRepo;
-    private final AdministradorRepository administradorRepo;
-    private final ClienteRepository clienteRepo;
+    private final UsuarioRepository usuarioRepo;
     private final PasswordEncoder passwordEncoder;
 
-    public LojaService(LojaRepository lojaRepo, AdministradorRepository administradorRepo,
-                       ClienteRepository clienteRepo, PasswordEncoder passwordEncoder) {
+    public LojaService(LojaRepository lojaRepo, UsuarioRepository usuarioRepo,
+                       PasswordEncoder passwordEncoder) {
         this.lojaRepo = lojaRepo;
-        this.administradorRepo = administradorRepo;
-        this.clienteRepo = clienteRepo;
+        this.usuarioRepo = usuarioRepo;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -43,19 +43,17 @@ public class LojaService {
                 () -> new IllegalArgumentException("Loja nao encontrada: " + email));
     }
 
-    /** E-mail livre entre os tres perfis (admin, loja, cliente). */
     public boolean emailDisponivel(String email) {
-        return !administradorRepo.existsByEmail(email)
-                && !lojaRepo.existsByEmail(email)
-                && !clienteRepo.existsByEmail(email);
+        return !UsuarioDetailsService.ADMIN_EMAIL.equalsIgnoreCase(email)
+                && !usuarioRepo.existsByEmail(email);
     }
 
     public boolean emailDisponivelParaEdicao(String email, Long lojaId) {
-        if (administradorRepo.existsByEmail(email) || clienteRepo.existsByEmail(email)) {
+        if (UsuarioDetailsService.ADMIN_EMAIL.equalsIgnoreCase(email)) {
             return false;
         }
-        return lojaRepo.findByEmail(email)
-                .map(l -> l.getId().equals(lojaId))
+        return usuarioRepo.findByEmail(email)
+                .map(u -> u.getId().equals(lojaId))
                 .orElse(true);
     }
 
