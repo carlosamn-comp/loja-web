@@ -26,7 +26,6 @@ zerar o banco, pare a aplicação e apague a pasta `data/`.
 |---------------|---------------------|-------|
 | Administrador | `admin@loja.com`    | `123` |
 | Loja          | `loja@loja.com`     | `123` |
-| Loja          | `loja2@loja.com`    | `123` |
 | Cliente       | `cliente@loja.com`  | `123` |
 
 Novos clientes em `/registro`; novas lojas em `/registro-loja`.
