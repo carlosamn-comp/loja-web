@@ -6,47 +6,28 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
- * Autenticacao do sistema.
+ * Carrega os usuarios do BANCO (lojas e clientes) para o Spring Security.
  *
- * O ADMINISTRADOR e definido DIRETAMENTE NESTE ARQUIVO (email/senha/role abaixo),
- * portanto seu login NAO consulta o banco de dados.
+ * Uma unica consulta ({@code findByEmail}) resolve o usuario, e a role
+ * ("LOJA"/"CLIENTE") ja vem gravada nele (definida no construtor da subclasse).
  *
- * Os demais usuarios (lojas e clientes) sao resolvidos com UMA UNICA consulta
- * ({@code usuarioRepo.findByEmail}); a role ja vem gravada no proprio usuario
- * (definida pelo construtor da subclasse), entao nao e preciso descobrir o perfil
- * tentando varios repositorios.
+ * O ADMINISTRADOR nao passa por aqui: ele e um usuario em memoria com ROLE_ADMIN,
+ * configurado em {@link com.exemplo.loja.config.SecurityConfig} (sem banco).
  */
 @Service
 public class UsuarioDetailsService implements UserDetailsService {
 
-    /** Credenciais do administrador — fixas no codigo (nao ficam no banco). */
-    public static final String ADMIN_EMAIL = "admin@loja.com";
-    private static final String ADMIN_SENHA = "123";
-
     private final UsuarioRepository usuarioRepo;
-    private final String adminSenhaHash;
 
-    public UsuarioDetailsService(UsuarioRepository usuarioRepo, PasswordEncoder passwordEncoder) {
+    public UsuarioDetailsService(UsuarioRepository usuarioRepo) {
         this.usuarioRepo = usuarioRepo;
-        // codifica a senha do admin uma unica vez, na construcao do bean
-        this.adminSenhaHash = passwordEncoder.encode(ADMIN_SENHA);
     }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // 1) Administrador: resolvido direto no arquivo, sem tocar o banco
-        if (ADMIN_EMAIL.equalsIgnoreCase(email)) {
-            return User.withUsername(ADMIN_EMAIL)
-                    .password(adminSenhaHash)
-                    .roles("ADMIN")
-                    .build();
-        }
-
-        // 2) Loja ou Cliente: uma unica consulta; a role ja vem no usuario
         Usuario usuario = usuarioRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario nao encontrado: " + email));
 

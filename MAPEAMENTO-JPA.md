@@ -157,7 +157,8 @@ Herda `id`, `nome`, `email`, `senha`, `role` de `Usuario` (role = `"LOJA"`). Cam
 Anotação de classe: `@Entity`, `@DiscriminatorValue("LOJA")`.
 
 > A senha é gravada com **hash BCrypt**; `WRITE_ONLY` permite recebê-la em JSON mas
-> nunca a expõe. **O administrador não é entidade** — é fixo em `UsuarioDetailsService`.
+> nunca a expõe. **O administrador não é entidade** — é um usuário em memória
+> (ROLE_ADMIN) definido em `SecurityConfig`, fora do banco.
 
 ### Pedido → tabela `pedido`
 

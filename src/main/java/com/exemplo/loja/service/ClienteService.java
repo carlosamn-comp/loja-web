@@ -1,5 +1,6 @@
 package com.exemplo.loja.service;
 
+import com.exemplo.loja.config.SecurityConfig;
 import com.exemplo.loja.model.Cliente;
 import com.exemplo.loja.repository.ClienteRepository;
 import com.exemplo.loja.repository.UsuarioRepository;
@@ -46,13 +47,13 @@ public class ClienteService {
 
     /** E-mail livre se nao for o do admin e nao existir em nenhum usuario (loja/cliente). */
     public boolean emailDisponivel(String email) {
-        return !UsuarioDetailsService.ADMIN_EMAIL.equalsIgnoreCase(email)
+        return !SecurityConfig.ADMIN_EMAIL.equalsIgnoreCase(email)
                 && !usuarioRepo.existsByEmail(email);
     }
 
     /** Disponibilidade considerando que o proprio cliente pode manter o e-mail. */
     public boolean emailDisponivelParaEdicao(String email, Long clienteId) {
-        if (UsuarioDetailsService.ADMIN_EMAIL.equalsIgnoreCase(email)) {
+        if (SecurityConfig.ADMIN_EMAIL.equalsIgnoreCase(email)) {
             return false;
         }
         return usuarioRepo.findByEmail(email)

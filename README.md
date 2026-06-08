@@ -106,7 +106,7 @@ src/main/java/com/exemplo/loja/
 │   ├── ProdutoImagemRepository, PedidoRepository.java  # PedidoRepo usa @EntityGraph
 │
 ├── service/                     # REGRAS DE NEGÓCIO (@Service)
-│   ├── UsuarioDetailsService.java  # AUTENTICAÇÃO: admin FIXO no código + loja/cliente do banco
+│   ├── UsuarioDetailsService.java  # AUTENTICAÇÃO: carrega loja/cliente do banco (1 consulta, usa a role)
 │   ├── LojaService, ClienteService, CategoriaService,
 │   ├── ProdutoService.java      # CRUD + filtros + imagens
 │   ├── PedidoService.java       # checkout transacional + atualização de status
@@ -126,7 +126,8 @@ src/main/java/com/exemplo/loja/
 │
 ├── dto/                         # objetos de entrada da REST (PedidoRequest, ItemPedidoRequest)
 ├── config/
-│   ├── SecurityConfig.java      # Spring Security (acessos por perfil, BCrypt, CSRF, H2)
+│   ├── SecurityConfig.java      # Spring Security: admin EM MEMÓRIA (ROLE_ADMIN) + provider do
+│   │                            #   banco (loja/cliente); acessos por perfil, BCrypt, CSRF, H2
 │   ├── WebConfig.java           # i18n (locale + interceptor) e validação localizada
 │   └── DataSeeder.java          # carga inicial (cliente, 2 lojas, produtos) — admin NÃO
 └── exception/
@@ -151,10 +152,11 @@ src/main/resources/
   subclasses. Estratégia **`SINGLE_TABLE`** → tudo numa tabela `usuario` com a coluna
   discriminadora `tipo`. Cada subclasse **define a sua `role` no construtor**
   (`"LOJA"`/`"CLIENTE"`), lida diretamente no login.
-- **Admin fixo no código:** o administrador (`admin@loja.com` / `123`) é definido em
-  `UsuarioDetailsService` e **não fica no banco** — o login dele não faz consulta ao
-  banco. Loja e cliente são resolvidos em **uma única consulta** (`findByEmail`),
-  usando a `role` já gravada.
+- **Admin fixo no código:** o administrador (`admin@loja.com` / `123`) é um usuário
+  **em memória** (`InMemoryUserDetailsManager`) definido em `SecurityConfig`, com
+  **ROLE_ADMIN atribuída no login** — **não fica no banco**. O Spring Security usa dois
+  `AuthenticationProvider`: um para o admin em memória e outro para os usuários do banco
+  (loja/cliente), resolvidos em **uma única consulta** (`findByEmail`) usando a `role`.
 - **Marketplace:** cada produto pertence a uma **loja**; um cliente compra de **várias
   lojas** no mesmo pedido. A loja gerencia só os seus produtos e vê só as suas vendas.
 - **Imagens no banco:** armazenadas como bytes (BLOB) em `produto_imagem`, servidas por
