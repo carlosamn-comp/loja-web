@@ -33,11 +33,12 @@ public class Loja extends Usuario {
 
     public Loja() {
         super();
-        setRole("LOJA");
+        setRole("LOJA"); // renomeia a role base "USER" -> "LOJA"
     }
 
     public Loja(String nome, String email, String senha, String cnpj, String descricao) {
-        super(nome, email, senha, "LOJA");
+        super(nome, email, senha);  // role inicia como "USER"
+        setRole("LOJA");            // renomeia para "LOJA"
         this.cnpj = cnpj;
         this.descricao = descricao;
     }

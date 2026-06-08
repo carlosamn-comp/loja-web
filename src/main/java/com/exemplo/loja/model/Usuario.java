@@ -52,18 +52,24 @@ public abstract class Usuario {
     @Column(nullable = false, length = 100)
     private String senha;
 
-    /** Perfil do Spring Security ("LOJA" ou "CLIENTE"), definido no construtor da subclasse. */
+    /** Role base de todo usuario do banco. As subclasses renomeiam (Loja/Cliente). */
+    public static final String ROLE_BASE = "USER";
+
+    /**
+     * Perfil do Spring Security. Comeca como "USER" (role base) e e RENOMEADO
+     * pelo construtor de cada subclasse para "LOJA" ou "CLIENTE".
+     */
     @Column(nullable = false, length = 20)
-    private String role;
+    private String role = ROLE_BASE;
 
     protected Usuario() {
     }
 
-    protected Usuario(String nome, String email, String senha, String role) {
+    protected Usuario(String nome, String email, String senha) {
         this.nome = nome;
         this.email = email;
         this.senha = senha;
-        this.role = role;
+        // role permanece "USER"; a subclasse renomeia no seu construtor
     }
 
     public Long getId() {

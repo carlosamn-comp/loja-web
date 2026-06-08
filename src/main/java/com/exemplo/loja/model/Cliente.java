@@ -51,12 +51,13 @@ public class Cliente extends Usuario {
 
     public Cliente() {
         super();
-        setRole("CLIENTE");
+        setRole("CLIENTE"); // renomeia a role base "USER" -> "CLIENTE"
     }
 
     public Cliente(String nome, String email, String senha, String cpf,
                    String telefone, Sexo sexo, LocalDate dataNascimento) {
-        super(nome, email, senha, "CLIENTE");
+        super(nome, email, senha);  // role inicia como "USER"
+        setRole("CLIENTE");         // renomeia para "CLIENTE"
         this.cpf = cpf;
         this.telefone = telefone;
         this.sexo = sexo;

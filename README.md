@@ -150,8 +150,9 @@ src/main/resources/
 
 - **Herança JPA (Aula07):** `Usuario` é a classe-mãe abstrata e `Loja`/`Cliente` são
   subclasses. Estratégia **`SINGLE_TABLE`** → tudo numa tabela `usuario` com a coluna
-  discriminadora `tipo`. Cada subclasse **define a sua `role` no construtor**
-  (`"LOJA"`/`"CLIENTE"`), lida diretamente no login.
+  discriminadora `tipo`. A role começa como **`"USER"`** (na classe-mãe) e é
+  **renomeada** pelo construtor de cada subclasse para **`"LOJA"`/`"CLIENTE"`**, lida
+  diretamente no login.
 - **Admin fixo no código:** o administrador (`admin@loja.com` / `123`) é um usuário
   **em memória** (`InMemoryUserDetailsManager`) definido em `SecurityConfig`, com
   **ROLE_ADMIN atribuída no login** — **não fica no banco**. O Spring Security usa dois

@@ -125,7 +125,7 @@ Convenções de coluna: PK = chave primária, FK = chave estrangeira, UK = únic
 | `nome` | `nome` | `varchar(120)` not null | `@Column(nullable=false, length=120)`, `@NotBlank` |
 | `email` | `email` | `varchar(120)` not null, **unique** | `@Column(nullable=false, unique=true, length=120)`, `@Email`, `@NotBlank` |
 | `senha` | `senha` | `varchar(100)` not null | `@Column(nullable=false, length=100)`, `@NotBlank`, `@JsonProperty(WRITE_ONLY)` |
-| `role` | `role` | `varchar(20)` not null | definido pelo construtor da subclasse (`"LOJA"`/`"CLIENTE"`) |
+| `role` | `role` | `varchar(20)` not null | base `"USER"`, **renomeada** pelo construtor da subclasse para `"LOJA"`/`"CLIENTE"` |
 
 Anotações de classe: `@Entity`, `@Inheritance(strategy = SINGLE_TABLE)`, `@DiscriminatorColumn(name="tipo")`.
 
