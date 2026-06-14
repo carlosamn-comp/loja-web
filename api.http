@@ -26,6 +26,8 @@ Content-Type: application/json
 }
 
 ### 6) Criar um produto (marketplace: informe categoria E loja pelo id)
+### Dica: rode "GET /api/lojas" para ver os ids. Como clientes e lojas dividem a
+### tabela "usuario", as lojas comecam no id 2 (TechStore=2, Livraria=3).
 POST {{host}}/api/produtos
 Content-Type: application/json
 
@@ -35,7 +37,7 @@ Content-Type: application/json
   "preco": 150.0,
   "estoque": 20,
   "categoria": { "id": 3 },
-  "loja": { "id": 1 }
+  "loja": { "id": 2 }
 }
 
 POST {{host}}/api/produtos
@@ -47,11 +49,11 @@ Content-Type: application/json
   "preco": 60.0,
   "estoque": 20,
   "categoria": { "id": 2 },
-  "loja": { "id": 2 }
+  "loja": { "id": 3 }
 }
 
-### Produtos de uma loja (troque o id)
-GET {{host}}/api/produtos/lojas/1
+### Produtos de uma loja (TechStore = 2, Livraria = 3)
+GET {{host}}/api/produtos/lojas/2
 
 ### 7) Atualizar um produto 
 PUT {{host}}/api/produtos/1
@@ -100,8 +102,8 @@ Content-Type: application/json
   "descricao": "Variedades"
 }
 
-### Atualizar loja (envie a senha)
-PUT {{host}}/api/lojas/1
+### Atualizar loja (id 2 = TechStore; envie a senha)
+PUT {{host}}/api/lojas/2
 Content-Type: application/json
 
 {
@@ -112,8 +114,9 @@ Content-Type: application/json
   "descricao": "Eletronicos premium"
 }
 
-### Remover loja
-DELETE {{host}}/api/lojas/3
+### Remover loja (use o id da "Loja Nova" criada acima, ex.: 4 — uma loja sem
+### produtos. Remover loja com produtos ja vendidos viola a integridade -> 409)
+DELETE {{host}}/api/lojas/4
 
 ### ==================== CLIENTES (CRUD) ====================
 ### Listar clientes
