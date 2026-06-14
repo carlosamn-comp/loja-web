@@ -6,6 +6,36 @@ com **Maven**. Várias **lojas/vendedores** cadastram produtos e os **clientes**
 compram de diferentes lojas. Implementa os requisitos de [`REQUISITOS.md`](REQUISITOS.md)
 (AA-1 e AA-2), com **três perfis de login: administrador, loja e cliente**.
 
+## Sobre a atividade (T6 — Desenvolvimento de Software para a Web)
+
+> As atividades **T5 a T8** são passos incrementais do ciclo de desenvolvimento de um
+> sistema Web. O objetivo geral é **desenvolver um sistema Web usando Spring MVC,
+> Thymeleaf e JPA que disponibiliza uma REST-API**, para um domínio escolhido e um
+> conjunto de requisitos. Nesta **T6**, o sistema Web deve ser **implementado** por
+> completo (com a REST-API). O domínio escolhido aqui é um **marketplace de produtos**.
+
+**Obs 1:** uso obrigatório de **Spring MVC + Spring Data JPA + Thymeleaf**.
+**Obs 2:** todos os artefatos (controladores, visões, entidades JPA, serviços, etc.)
+devem ser adequadamente implementados. Apenas **projetos Maven** configurados são aceitos.
+**Entrega:** postar a URL do GitHub do projeto.
+
+### Como o projeto atende à T6
+
+| Exigência da T6 | Onde está no projeto |
+|---|---|
+| **Spring MVC** (controladores) | `web/` (telas) e `rest/` (REST-API) |
+| **Spring Data JPA** (entidades + DAOs) | `model/` (entidades `@Entity`) e `repository/` (interfaces `JpaRepository`) |
+| **Thymeleaf** (visões) | `templates/` (catálogo, login, registro, carrinho, pedidos, áreas admin/loja, erro) |
+| **REST-API disponibilizada** | `@RestController` em `rest/`: `/api/clientes`, `/api/lojas`, `/api/categorias`, `/api/produtos`, `/api/pedidos` |
+| **Serviços** e demais artefatos | `service/`, além de `config/`, `dto/`, `exception/` |
+| **Projeto Maven configurado** | `pom.xml` + wrapper `mvnw` / `mvnw.cmd` |
+| **Roteiro de execução** (SGBD, banco, scripts, usuários, papéis) | seção [Roteiro de execução](#roteiro-de-execução-sgbd-banco-e-usuários) abaixo |
+| **Entrega (URL do GitHub)** | <https://github.com/carlosamn-comp/loja-web> |
+
+> Documentos de apoio no repositório: [`REQUISITOS.md`](REQUISITOS.md)/[`REQUISITOS.pdf`](REQUISITOS.pdf)
+> (requisitos AA-1/AA-2), [`MAPEAMENTO-JPA.md`](MAPEAMENTO-JPA.md) (modelo e DDL) e
+> [`api.http`](api.http) (exemplos da REST-API).
+
 ## Como executar
 
 ```bash
