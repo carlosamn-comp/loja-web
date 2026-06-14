@@ -20,6 +20,34 @@ zerar o banco, pare a aplicação e apague a pasta `data/`.
 > Se a porta 8080 estiver ocupada:
 > `.\mvnw spring-boot:run "-Dspring-boot.run.arguments=--server.port=8081"`
 
+## Roteiro de execução (SGBD, banco e usuários)
+
+- **SGBD:** **H2 Database** — banco relacional **embutido** (não precisa instalar nada
+  separadamente; a dependência já vem no `pom.xml`). Roda em **modo arquivo**.
+- **Nome do banco:** **`lojadb`** — URL JDBC `jdbc:h2:file:./data/lojadb`
+  (arquivo `data/lojadb.mv.db`), usuário **`sa`**, senha **em branco**.
+- **Scripts SQL:** **não é necessário rodar nenhum script manualmente.** O esquema
+  (tabelas + chaves estrangeiras) é **criado/atualizado automaticamente** pelo Hibernate
+  na inicialização (`spring.jpa.hibernate.ddl-auto=update`). O **DDL completo** gerado
+  está documentado em [`MAPEAMENTO-JPA.md`](MAPEAMENTO-JPA.md).
+- **Carga inicial (seed):** os dados de exemplo (usuários, categorias e produtos) são
+  populados automaticamente por código em `config/DataSeeder.java` na primeira execução.
+- **Console do banco (opcional):** acesse `http://localhost:8080/h2-console` e informe
+  *JDBC URL* = `jdbc:h2:file:./data/lojadb`, *User Name* = `sa`, *Password* = (vazio).
+
+### Usuários populados e papéis (todos com senha `123`)
+
+| E-mail | Papel (role) | Origem | O que pode fazer |
+|--------|--------------|--------|------------------|
+| `admin@loja.com` | `ROLE_ADMIN` | fixo no código (em memória, `SecurityConfig`) | CRUD de clientes, lojas e categorias; gerir o status de todos os pedidos |
+| `loja@loja.com` (TechStore) | `ROLE_LOJA` | banco (seed) | cadastrar/editar os seus produtos; ver/atualizar as suas vendas |
+| `loja2@loja.com` (Livraria Cultura) | `ROLE_LOJA` | banco (seed) | idem, para os seus produtos |
+| `cliente@loja.com` (Maria Silva) | `ROLE_CLIENTE` | banco (seed) | comprar (carrinho/checkout) e ver os seus pedidos |
+
+> O administrador **não fica no banco** (é um usuário em memória). Lojas e clientes ficam
+> na tabela `usuario` (herança JPA *single table*). Novos clientes podem se cadastrar em
+> `/registro` e novas lojas em `/registro-loja`.
+
 ## Credenciais (populadas na inicialização — senha `123`)
 
 | Perfil        | E-mail              | Senha |
