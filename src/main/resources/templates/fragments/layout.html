@@ -15,6 +15,7 @@
 
     <div class="nav-links">
         <a th:href="@{/produtos}" th:text="#{nav.catalogo}">Catalogo</a>
+        <a th:href="@{/rest-client/categorias}" th:text="#{nav.restClient}">Categorias (REST)</a>
 
         <!-- Cliente autenticado -->
         <th:block sec:authorize="hasRole('CLIENTE')">

@@ -1,6 +1,5 @@
 package com.exemplo.loja.service;
 
-import com.exemplo.loja.config.SecurityConfig;
 import com.exemplo.loja.model.Cliente;
 import com.exemplo.loja.repository.ClienteRepository;
 import com.exemplo.loja.repository.UsuarioRepository;
@@ -13,9 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
  * Regras de negocio do cadastro de clientes, reaproveitadas pelo auto-cadastro
  * (/registro) e pelo CRUD administrativo (/admin/clientes).
  *
- * A unicidade de e-mail e verificada via {@link UsuarioRepository} (abrange lojas
- * E clientes, pois compartilham a tabela "usuario") e tambem contra o e-mail do
- * administrador, que e fixo no codigo ({@link UsuarioDetailsService#ADMIN_EMAIL}).
+ * A unicidade de e-mail e verificada via {@link UsuarioRepository}, que abrange
+ * TODOS os usuarios (admin, lojas e clientes) por compartilharem a tabela "usuario".
  */
 @Service
 public class ClienteService {
@@ -45,17 +43,13 @@ public class ClienteService {
                 () -> new IllegalArgumentException("Cliente nao encontrado: " + email));
     }
 
-    /** E-mail livre se nao for o do admin e nao existir em nenhum usuario (loja/cliente). */
+    /** E-mail livre se nao existir em nenhum usuario (admin, loja ou cliente). */
     public boolean emailDisponivel(String email) {
-        return !SecurityConfig.ADMIN_EMAIL.equalsIgnoreCase(email)
-                && !usuarioRepo.existsByEmail(email);
+        return !usuarioRepo.existsByEmail(email);
     }
 
     /** Disponibilidade considerando que o proprio cliente pode manter o e-mail. */
     public boolean emailDisponivelParaEdicao(String email, Long clienteId) {
-        if (SecurityConfig.ADMIN_EMAIL.equalsIgnoreCase(email)) {
-            return false;
-        }
         return usuarioRepo.findByEmail(email)
                 .map(u -> u.getId().equals(clienteId))
                 .orElse(true);

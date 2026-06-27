@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Categorias (Cliente REST)')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container narrow">
+    <h1 th:text="${edicao} ? #{crud.editar} : #{crud.novo}">Categoria</h1>
+
+    <div th:if="${erroApi != null}" class="alert erro" th:text="${erroApi}">Erro da API</div>
+
+    <form th:object="${categoria}" method="post"
+          th:action="${edicao} ? @{/rest-client/categorias/{id}/editar(id=*{id})} : @{/rest-client/categorias/novo}">
+
+        <label>
+            <span th:text="#{categoria.nome}">Nome</span>
+            <input type="text" th:field="*{nome}"/>
+            <small class="erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></small>
+        </label>
+
+        <label>
+            <span th:text="#{categoria.descricao}">Descricao</span>
+            <textarea th:field="*{descricao}" rows="3"></textarea>
+        </label>
+
+        <div class="actions">
+            <button type="submit" th:text="#{crud.salvar}">Salvar</button>
+            <a class="btn secondary" th:href="@{/rest-client/categorias}" th:text="#{crud.cancelar}">Cancelar</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

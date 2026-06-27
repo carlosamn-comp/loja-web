@@ -26,8 +26,9 @@ Content-Type: application/json
 }
 
 ### 6) Criar um produto (marketplace: informe categoria E loja pelo id)
-### Dica: rode "GET /api/lojas" para ver os ids. Como clientes e lojas dividem a
-### tabela "usuario", as lojas comecam no id 2 (TechStore=2, Livraria=3).
+### Dica: rode "GET /api/lojas" e "GET /api/clientes" para ver os ids reais.
+### Todos os usuarios dividem a tabela "usuario", entao os ids dependem da ordem do
+### seed: admin=1, cliente=2, TechStore(loja)=3, Livraria(loja)=4.
 POST {{host}}/api/produtos
 Content-Type: application/json
 
@@ -37,7 +38,7 @@ Content-Type: application/json
   "preco": 150.0,
   "estoque": 20,
   "categoria": { "id": 3 },
-  "loja": { "id": 2 }
+  "loja": { "id": 3 }
 }
 
 POST {{host}}/api/produtos
@@ -49,11 +50,11 @@ Content-Type: application/json
   "preco": 60.0,
   "estoque": 20,
   "categoria": { "id": 2 },
-  "loja": { "id": 3 }
+  "loja": { "id": 4 }
 }
 
-### Produtos de uma loja (TechStore = 2, Livraria = 3)
-GET {{host}}/api/produtos/lojas/2
+### Produtos de uma loja (TechStore = 3, Livraria = 4)
+GET {{host}}/api/produtos/lojas/3
 
 ### 7) Atualizar um produto 
 PUT {{host}}/api/produtos/1
@@ -102,8 +103,8 @@ Content-Type: application/json
   "descricao": "Variedades"
 }
 
-### Atualizar loja (id 2 = TechStore; envie a senha)
-PUT {{host}}/api/lojas/2
+### Atualizar loja (id 3 = TechStore; envie a senha)
+PUT {{host}}/api/lojas/3
 Content-Type: application/json
 
 {
@@ -114,16 +115,16 @@ Content-Type: application/json
   "descricao": "Eletronicos premium"
 }
 
-### Remover loja (use o id da "Loja Nova" criada acima, ex.: 4 — uma loja sem
+### Remover loja (use o id da "Loja Nova" criada acima, ex.: 5 — uma loja sem
 ### produtos. Remover loja com produtos ja vendidos viola a integridade -> 409)
-DELETE {{host}}/api/lojas/4
+DELETE {{host}}/api/lojas/5
 
 ### ==================== CLIENTES (CRUD) ====================
 ### Listar clientes
 GET {{host}}/api/clientes
 
 ### Buscar cliente por id
-GET {{host}}/api/clientes/1
+GET {{host}}/api/clientes/2
 
 ### Criar cliente (a senha e recebida mas nunca devolvida no JSON)
 POST {{host}}/api/clientes
@@ -140,7 +141,7 @@ Content-Type: application/json
 }
 
 ### Atualizar cliente (envie todos os campos, inclusive a senha)
-PUT {{host}}/api/clientes/1
+PUT {{host}}/api/clientes/2
 Content-Type: application/json
 
 {
@@ -154,11 +155,11 @@ Content-Type: application/json
 }
 
 ### Remover cliente
-DELETE {{host}}/api/clientes/1
+DELETE {{host}}/api/clientes/2
 
 ### ==================== PEDIDOS ====================
 ### Criar pedido para o cliente de id = 1 (use ids de produtos existentes)
-POST {{host}}/api/pedidos/clientes/1
+POST {{host}}/api/pedidos/clientes/2
 Content-Type: application/json
 
 {
@@ -169,7 +170,7 @@ Content-Type: application/json
 }
 
 ### Listar pedidos do cliente de id = 1
-GET {{host}}/api/pedidos/clientes/1
+GET {{host}}/api/pedidos/clientes/2
 
 ### Listar pedidos por status (ABERTO, PAGO, ENVIADO, CANCELADO)
 GET {{host}}/api/pedidos/status/ABERTO

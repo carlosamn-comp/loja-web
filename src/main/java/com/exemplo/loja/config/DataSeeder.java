@@ -1,14 +1,18 @@
 package com.exemplo.loja.config;
 
+import com.exemplo.loja.model.Administrador;
 import com.exemplo.loja.model.Categoria;
 import com.exemplo.loja.model.Cliente;
 import com.exemplo.loja.model.Loja;
 import com.exemplo.loja.model.Produto;
+import com.exemplo.loja.model.ProdutoImagem;
 import com.exemplo.loja.model.Sexo;
 import com.exemplo.loja.repository.CategoriaRepository;
 import com.exemplo.loja.repository.ClienteRepository;
 import com.exemplo.loja.repository.LojaRepository;
+import com.exemplo.loja.repository.ProdutoImagemRepository;
 import com.exemplo.loja.repository.ProdutoRepository;
+import com.exemplo.loja.repository.UsuarioRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.slf4j.Logger;
@@ -16,15 +20,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * Carga inicial de dados (marketplace).
  *
- * Popula um cliente, DUAS lojas e produtos de exemplo vinculados a essas lojas.
- * O ADMINISTRADOR nao e semeado aqui: ele e definido diretamente no codigo, em
- * {@link com.exemplo.loja.service.UsuarioDetailsService}. Todas as credenciais
- * usam a senha "123".
+ * Popula o administrador, um cliente, duas lojas e produtos de exemplo
+ * vinculados a essas lojas — TODOS no banco, na tabela `usuario` (admin, loja e
+ * cliente) com senha criptografada (BCrypt). Todas as credenciais usam a senha "123".
+ * O produto "Mouse Gamer" recebe uma imagem de exemplo (bytes no banco).
  */
 @Configuration
 public class DataSeeder {
@@ -32,12 +37,21 @@ public class DataSeeder {
     private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
 
     @Bean
-    public CommandLineRunner seed(LojaRepository lojaRepo,
+    public CommandLineRunner seed(UsuarioRepository usuarioRepo,
+                                  LojaRepository lojaRepo,
                                   ClienteRepository clienteRepo,
                                   CategoriaRepository categoriaRepo,
                                   ProdutoRepository produtoRepo,
+                                  ProdutoImagemRepository imagemRepo,
                                   PasswordEncoder passwordEncoder) {
         return args -> {
+            // ---------- Administrador (no banco, senha BCrypt) ----------
+            if (!usuarioRepo.existsByEmail("admin@loja.com")) {
+                usuarioRepo.save(new Administrador(
+                        "Administrador", "admin@loja.com", passwordEncoder.encode("123")));
+                log.info("Administrador criado: admin@loja.com / 123");
+            }
+
             // ---------- Cliente de demonstracao ----------
             if (!clienteRepo.existsByEmail("cliente@loja.com")) {
                 clienteRepo.save(new Cliente(
@@ -71,31 +85,46 @@ public class DataSeeder {
                 Loja techStore = lojaRepo.findByEmail("loja@loja.com").orElseThrow();
                 Loja livraria = lojaRepo.findByEmail("loja2@loja.com").orElseThrow();
 
-                salvarProduto(produtoRepo, "Notebook Dell", "Notebook 16GB RAM, SSD 512GB",
+                salvar(produtoRepo, "Notebook Dell", "Notebook 16GB RAM, SSD 512GB",
                         new BigDecimal("4500.00"), 10, eletronicos, techStore);
-                salvarProduto(produtoRepo, "Fone Bluetooth", "Fone over-ear com cancelamento de ruido",
+                salvar(produtoRepo, "Fone Bluetooth", "Fone over-ear com cancelamento de ruido",
                         new BigDecimal("350.00"), 50, eletronicos, techStore);
-                salvarProduto(produtoRepo, "Mouse Gamer", "Mouse RGB 7 botoes",
+                Produto mouse = salvar(produtoRepo, "Mouse Gamer", "Mouse RGB 7 botoes",
                         new BigDecimal("150.00"), 40, perifericos, techStore);
-                salvarProduto(produtoRepo, "Java Efetivo", "Boas praticas de programacao em Java",
+                salvar(produtoRepo, "Java Efetivo", "Boas praticas de programacao em Java",
                         new BigDecimal("180.00"), 30, livros, livraria);
-                salvarProduto(produtoRepo, "O Senhor dos Aneis", "Edicao completa",
+                salvar(produtoRepo, "O Senhor dos Aneis", "Edicao completa",
                         new BigDecimal("120.00"), 25, livros, livraria);
+
+                // imagem de exemplo do Mouse Gamer (bytes no banco)
+                anexarImagem(imagemRepo, mouse, "seed/mouse-gamer.jpg", "image/jpeg");
 
                 log.info("Catalogo populado: {} categorias, {} produtos, {} lojas",
                         categoriaRepo.count(), produtoRepo.count(), lojaRepo.count());
             }
 
             log.info("===== Carga inicial (marketplace) concluida =====");
-            log.info("Admin (fixo no codigo): admin@loja.com / 123");
+            log.info("Usuarios (todos no banco, senha 123): admin@loja.com, loja@loja.com, loja2@loja.com, cliente@loja.com");
             log.info("Catalogo publico:  http://localhost:8080/produtos");
         };
     }
 
-    private void salvarProduto(ProdutoRepository repo, String nome, String descricao,
-                               BigDecimal preco, int estoque, Categoria categoria, Loja loja) {
+    private Produto salvar(ProdutoRepository repo, String nome, String descricao,
+                           BigDecimal preco, int estoque, Categoria categoria, Loja loja) {
         Produto p = new Produto(nome, descricao, preco, estoque, categoria);
         p.setLoja(loja);
-        repo.save(p);
+        return repo.save(p);
+    }
+
+    private void anexarImagem(ProdutoImagemRepository imagemRepo, Produto produto,
+                             String classpath, String contentType) {
+        try {
+            byte[] bytes = new ClassPathResource(classpath).getInputStream().readAllBytes();
+            imagemRepo.save(new ProdutoImagem(bytes, contentType,
+                    classpath.substring(classpath.lastIndexOf('/') + 1), produto));
+            log.info("Imagem de exemplo anexada ao produto '{}'", produto.getNome());
+        } catch (Exception e) {
+            log.warn("Nao foi possivel carregar a imagem de seed '{}': {}", classpath, e.getMessage());
+        }
     }
 }

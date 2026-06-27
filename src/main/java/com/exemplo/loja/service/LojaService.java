@@ -1,6 +1,5 @@
 package com.exemplo.loja.service;
 
-import com.exemplo.loja.config.SecurityConfig;
 import com.exemplo.loja.model.Loja;
 import com.exemplo.loja.repository.LojaRepository;
 import com.exemplo.loja.repository.UsuarioRepository;
@@ -45,14 +44,10 @@ public class LojaService {
     }
 
     public boolean emailDisponivel(String email) {
-        return !SecurityConfig.ADMIN_EMAIL.equalsIgnoreCase(email)
-                && !usuarioRepo.existsByEmail(email);
+        return !usuarioRepo.existsByEmail(email);
     }
 
     public boolean emailDisponivelParaEdicao(String email, Long lojaId) {
-        if (SecurityConfig.ADMIN_EMAIL.equalsIgnoreCase(email)) {
-            return false;
-        }
         return usuarioRepo.findByEmail(email)
                 .map(u -> u.getId().equals(lojaId))
                 .orElse(true);

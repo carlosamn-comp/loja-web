@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Categorias (Cliente REST)')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container">
+    <h1>Categorias <small class="muted">(via REST-API — T8)</small></h1>
+
+    <div class="alert ok">
+        Esta tela é uma <strong>aplicação cliente</strong> que consome a REST-API
+        <code>/api/categorias</code> usando o <strong>RestClient</strong> do Spring
+        (não acessa o banco diretamente).
+    </div>
+
+    <p><a class="btn" th:href="@{/rest-client/categorias/novo}" th:text="#{crud.novo}">Novo</a></p>
+
+    <table>
+        <thead>
+        <tr>
+            <th>#</th>
+            <th th:text="#{categoria.nome}">Nome</th>
+            <th th:text="#{categoria.descricao}">Descricao</th>
+            <th th:text="#{crud.acoes}">Acoes</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="c : ${categorias}">
+            <td th:text="${c.id}">1</td>
+            <td th:text="${c.nome}">Nome</td>
+            <td th:text="${c.descricao}">Descricao</td>
+            <td class="actions">
+                <a class="btn" th:href="@{/rest-client/categorias/{id}/editar(id=${c.id})}"
+                   th:text="#{crud.editar}">Editar</a>
+                <form th:action="@{/rest-client/categorias/{id}/excluir(id=${c.id})}" method="post"
+                      th:onsubmit="'return confirm(\'' + #{crud.confirmaExcluir} + '\');'">
+                    <button type="submit" class="danger" th:text="#{crud.excluir}">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(categorias)}">
+            <td colspan="4" class="vazio">—</td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

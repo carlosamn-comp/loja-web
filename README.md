@@ -6,7 +6,7 @@ com **Maven**. Várias **lojas/vendedores** cadastram produtos e os **clientes**
 compram de diferentes lojas. Implementa os requisitos de [`REQUISITOS.md`](REQUISITOS.md)
 (AA-1 e AA-2), com **três perfis de login: administrador, loja e cliente**.
 
-## Sobre as atividades (T6 e T7 — Desenvolvimento de Software para a Web)
+## Sobre as atividades (T6, T7 e T8 — Desenvolvimento de Software para a Web)
 
 > As atividades **T5 a T8** são passos incrementais do ciclo de desenvolvimento de um
 > sistema Web. O objetivo geral é **desenvolver um sistema Web usando Spring MVC,
@@ -16,9 +16,12 @@ compram de diferentes lojas. Implementa os requisitos de [`REQUISITOS.md`](REQUI
 > - **T6:** implementar o sistema Web (telas com Spring MVC + Thymeleaf + JPA).
 > - **T7:** complementar a T6 implementando a **API REST** (Controladores REST do Spring
 >   MVC + Spring JPA) para o mesmo conjunto de requisitos.
+> - **T8:** implementar uma aplicação web **cliente da REST-API**, que acessa o CRUD de
+>   uma entidade via **RestClient** + Spring MVC + Thymeleaf. Entidade escolhida:
+>   **Categoria** (tela em `/rest-client/categorias`).
 >
 > O domínio escolhido aqui é um **marketplace de produtos**. Este repositório já contempla
-> **T6 e T7** (sistema Web + REST-API).
+> **T6, T7 e T8** (sistema Web + REST-API + cliente da REST-API).
 
 **Obs 1:** uso obrigatório de **Spring MVC + Spring Data JPA + Thymeleaf**.
 **Obs 2:** todos os artefatos (controladores, visões, entidades JPA, serviços, etc.)
@@ -33,6 +36,7 @@ devem ser adequadamente implementados. Apenas **projetos Maven** configurados s�
 | **Spring Data JPA** (entidades + DAOs) | `model/` (entidades `@Entity`) e `repository/` (interfaces `JpaRepository`) |
 | **Thymeleaf** (visões) | `templates/` (catálogo, login, registro, carrinho, pedidos, áreas admin/loja, erro) |
 | **REST-API disponibilizada** (entregável da **T7**) | `@RestController` em `rest/`: `/api/clientes`, `/api/lojas`, `/api/categorias`, `/api/produtos`, `/api/pedidos` |
+| **App cliente da REST-API** (entregável da **T8**) | `client/` (RestClient) + `web/restclient/` + `templates/restclient/` → tela `/rest-client/categorias` |
 | **Serviços** e demais artefatos | `service/`, além de `config/`, `dto/`, `exception/` |
 | **Projeto Maven configurado** | `pom.xml` + wrapper `mvnw` / `mvnw.cmd` |
 | **Roteiro de execução** (SGBD, banco, scripts, usuários, papéis) | seção [Roteiro de execução](#roteiro-de-execução-sgbd-banco-e-usuários) abaixo |
@@ -75,13 +79,13 @@ zerar o banco, pare a aplicação e apague a pasta `data/`.
 
 | E-mail | Papel (role) | Origem | O que pode fazer |
 |--------|--------------|--------|------------------|
-| `admin@loja.com` | `ROLE_ADMIN` | fixo no código (em memória, `SecurityConfig`) | CRUD de clientes, lojas e categorias; gerir o status de todos os pedidos |
+| `admin@loja.com` | `ROLE_ADMIN` | banco (seed), tabela `usuario` `tipo=ADMIN`, senha BCrypt | CRUD de clientes, lojas e categorias; gerir o status de todos os pedidos |
 | `loja@loja.com` (TechStore) | `ROLE_LOJA` | banco (seed) | cadastrar/editar os seus produtos; ver/atualizar as suas vendas |
 | `loja2@loja.com` (Livraria Cultura) | `ROLE_LOJA` | banco (seed) | idem, para os seus produtos |
 | `cliente@loja.com` (Maria Silva) | `ROLE_CLIENTE` | banco (seed) | comprar (carrinho/checkout) e ver os seus pedidos |
 
-> O administrador **não fica no banco** (é um usuário em memória). Lojas e clientes ficam
-> na tabela `usuario` (herança JPA *single table*). Novos clientes podem se cadastrar em
+> Todos os usuários (admin, lojas e clientes) ficam na tabela `usuario` (herança JPA
+> *single table*), com senha criptografada (BCrypt). Novos clientes podem se cadastrar em
 > `/registro` e novas lojas em `/registro-loja`.
 
 ## Credenciais (populadas na inicialização — senha `123`)
@@ -183,7 +187,8 @@ src/main/java/com/exemplo/loja/
 │   ├── ControllerModelAdvice.java    # expõe a URI atual (troca de idioma)
 │   ├── admin/                   # área do ADMIN: clientes, lojas, categorias, pedidos
 │   ├── loja/                    # área da LOJA: seus produtos (R3) e suas vendas (R7)
-│   └── carrinho/                # CarrinhoSession (@SessionScope) + CarrinhoController (R5)
+│   ├── carrinho/                # CarrinhoController (R5) — carrinho persistido no banco
+│   └── restclient/              # T8: tela cliente que consome a REST-API (RestClient)
 │
 ├── rest/                        # REST-API (@RestController) — AA-2, sob /api/**
 │   └── Cliente/Loja/Categoria/Produto/PedidoRestController.java
@@ -212,20 +217,25 @@ src/main/resources/
 
 ## Pontos importantes
 
-- **Herança JPA (Aula07):** `Usuario` é a classe-mãe abstrata e `Loja`/`Cliente` são
-  subclasses. Estratégia **`SINGLE_TABLE`** → tudo numa tabela `usuario` com a coluna
-  discriminadora `tipo`. A role começa como **`"USER"`** (na classe-mãe) e é
-  **renomeada** pelo construtor de cada subclasse para **`"LOJA"`/`"CLIENTE"`**, lida
-  diretamente no login.
-- **Admin fixo no código:** o administrador (`admin@loja.com` / `123`) é um usuário
-  **em memória** (`InMemoryUserDetailsManager`) definido em `SecurityConfig`, com
-  **ROLE_ADMIN atribuída no login** — **não fica no banco**. O Spring Security usa dois
-  `AuthenticationProvider`: um para o admin em memória e outro para os usuários do banco
-  (loja/cliente), resolvidos em **uma única consulta** (`findByEmail`) usando a `role`.
+- **Herança JPA (Aula07):** `Usuario` é a classe-mãe abstrata e `Administrador`, `Loja`
+  e `Cliente` são subclasses. Estratégia **`SINGLE_TABLE`** → tudo numa tabela `usuario`
+  com a coluna discriminadora `tipo`. A role começa como **`"USER"`** (na classe-mãe) e é
+  **renomeada** pelo construtor de cada subclasse para **`"ADMIN"`/`"LOJA"`/`"CLIENTE"`**,
+  lida diretamente no login.
+- **Autenticação:** todos os usuários ficam no **banco** (tabela `usuario`) com **senha
+  criptografada (BCrypt)**. O `UsuarioDetailsService` resolve o login em **uma consulta**
+  (`findByEmail`) e usa a `role` gravada. O admin é semeado no `DataSeeder`.
+- **Carrinho persistente (no banco):** o carrinho do cliente é guardado na tabela
+  `carrinho_item` (entidade `CarrinhoItem`, uma linha por cliente+produto), então **os
+  itens permanecem ao fechar/reabrir a página** (e até entre logins).
+- **Cliente REST (T8):** a tela `/rest-client/categorias` é uma aplicação que **consome a
+  REST-API** via **`RestClient`** (em `client/CategoriaApiClient`), em vez de acessar o
+  banco direto — demonstra um cliente da API.
 - **Marketplace:** cada produto pertence a uma **loja**; um cliente compra de **várias
   lojas** no mesmo pedido. A loja gerencia só os seus produtos e vê só as suas vendas.
 - **Imagens no banco:** armazenadas como bytes (BLOB) em `produto_imagem`, servidas por
-  `GET /produtos/imagens/{id}` com o content-type correto (máx. 10 por produto).
+  `GET /produtos/imagens/{id}` com o content-type correto (máx. 10 por produto). O produto
+  "Mouse Gamer" já vem com uma imagem de exemplo (`resources/seed/mouse-gamer.jpg`).
 - **Persistência:** H2 em arquivo (`data/lojadb.mv.db`). Para zerar, pare a app e apague
   a pasta `data/`.
 - **CPF/CNPJ:** apenas obrigatórios e únicos (sem validação de formato — é um modelo).
